@@ -1,0 +1,37 @@
+{
+  "name": "json-giant",
+  "productName": "JSON Giant",
+  "version": "0.1.0",
+  "description": "JSON Viewer for Giant Files",
+  "main": "app/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "json",
+    "viewer"
+  ],
+  "author": "De Wildt van Reenen",
+  "license": "MIT",
+  "dependencies": {
+    "angular": "^1.6.2",
+    "angularjs": "0.0.1",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.1.1",
+    "jsonpath": "^0.2.10",
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "electron": "^1.4.15",
+    "electron-packager": "^8.5.1",
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-electron": "^5.0.0",
+    "grunt-run": "^0.6.0",
+    "nlf": "^1.4.3"
+  }
+}

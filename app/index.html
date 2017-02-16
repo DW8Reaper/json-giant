@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jsonGiant">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON Giant</title>
+    <script>
+        let $ = require('jquery');
+    </script>
+    <script src="../node_modules/angular/angular.min.js"></script>
+    <script src="../node_modules/lodash/lodash.min.js"></script>
+    <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <style>
+        div {
+            font-family: Arial;
+            font-weight: bold;
+            line-height: 150%;
+        }
+
+        div.tree-node {
+            padding-left: 20px;
+        }
+
+        span.tree-node-close-spacer {
+            padding-left: 20px;
+        }
+
+        div.tree-node-no-expander {
+            padding-left: 20px;
+        }
+
+        div.tree-node-expander {
+            padding-left: 20px;
+            empty-cells: show;
+            display: inline;
+            background-size: 12px 12px;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+        }
+
+        div.tree-node-expander-expand {
+            background-image: url("expand.png");
+        }
+
+        div.tree-node-expander-collapse {
+            background-image: url("collapse.png");
+        }
+
+        div.tree-node-show-more {
+            padding-left: 40px;
+            color: cornflowerblue;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: smaller;
+        }
+
+        span.tree-node-val-boolean {
+            color: darkred;
+        }
+
+        span.tree-node-val-number {
+            color: darkgreen;
+        }
+
+        span.tree-node-val-null {
+            color: dimgray;
+        }
+
+        span.tree-node-val-string {
+            color: purple;
+        }
+
+    </style>
+    <script>
+    </script>
+    <script src="json-giant-main.js"></script>
+    <script src="json-tree.js"></script>
+</head>
+<body ng-controller="defaultCtrl">
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header ">
+            <!--<div class="row">-->
+            <!--<div class="col-md-2">-->
+
+
+            <!--</div>-->
+            <!--<div class="col-md-4">-->
+
+
+            <form class="form-inline" ng-submit="filterChanged(jsonFilter)">
+
+
+                        <div class="btn btn-default navbar-btn" ng-click="pastFromClipboard()">
+                            <span class="glyphicon glyphicon-paste" aria-hidden="true" data-toggle="tooltip"
+                                  title="Load from clipboard"></span>
+                        </div>
+                        <div class="btn btn-default navbar-btn" ng-click="openFile()">
+                            <span class="glyphicon glyphicon-folder-open" aria-hidden="true" data-toggle="tooltip"
+                                  title="Open file"></span>
+                        </div>
+
+            <div class="input-group">
+                <span class="input-group-addon">Filter Path</span>
+                <input type="text" class="form-control" size="70" ng-model="jsonFilter"
+                       ng-keyup="jsonFilterKeyPress($event, jsonFilter)">
+                <div class="input-group-btn">
+                          <button class="btn btn-default" type="submit">Apply</button>
+                          <button class="btn btn-default" ng-click="jsonFilter = '';" type="submit">
+                              <span class="glyphicon glyphicon-trash" aria-hidden="true" data-toggle="tooltip"
+                                    title="Clear filter"></span>
+                          </button>
+                </div>
+            </div>
+            </form>
+
+            <!--</div>-->
+            <!--</div>-->
+
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid" style="fill:100%;height:100%;">
+    <div class="container-fluid">
+    <json-tree json-content="data" max-nodes="200" json-filter="activeJSONFilter"></json-tree>
+    </div>
+</div>
+
+</body>
+</html>
