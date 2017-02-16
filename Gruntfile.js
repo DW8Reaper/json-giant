@@ -60,7 +60,7 @@ module.exports = function(grunt) {
     grunt.registerTask('run-app', 'Run JSON Giant electron app', ['run:electron']);
     grunt.registerTask('default', ['run-app']);
 
-    grunt.registerTask('update-used-libraries', 'Update list of used libraries with license information', function () {
+    grunt.registerTask('update-used-libs', 'Update list of used libraries with license information', function () {
         let done = this.async();
 
         var nlf = require('nlf');
