@@ -2,10 +2,18 @@
  * Created by dewildt on 2/13/17.
  */
 
-(function () {
-
+(function() {
     angular.module('jsonGiant', [])
-        .constant("electron", require('electron').remote)
+        .service('electron', function () {
+            'use strict';
+            return require('electron').remote;
+
+        })
+        .service('jsonpath', function () {
+            'use strict';
+            return require('jsonpath');
+
+        })
         .controller('defaultCtrl', function ($scope, $timeout, $window, electron) {
 
             $scope.filename = "";
@@ -24,6 +32,7 @@
 
             $scope.openFile = function () {
                 const fs = require('fs');
+
                 let filename = electron.dialog.showOpenDialog({
                     filters: [{
                         name: "JSON Files",

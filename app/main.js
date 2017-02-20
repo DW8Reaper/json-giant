@@ -2,6 +2,8 @@
  * Created by dewildt on 2/7/17.
  */
 
+
+
 const _ = require('lodash');
 
 const {app, BrowserWindow, Menu} = require('electron');
@@ -11,9 +13,6 @@ const url = require('url');
 let jsonWindows = [];
 
 function appLoaded() {
-
-
-
 
 
     const template = [
@@ -151,7 +150,11 @@ function appLoaded() {
 }
 
 function createWindow() {
-    let newWindow = new BrowserWindow({width: 1060, height: 850});
+    let newWindow = new BrowserWindow({
+        width: 1060,
+        height: 850,
+        "node-integration": true
+    });
 
     newWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
@@ -161,7 +164,9 @@ function createWindow() {
 
     jsonWindows.push(newWindow);
 
-    //newWindow.webContents.openDevTools();
+    if (_.indexOf(process.argv, 'debug-mode') >= 0) {
+        newWindow.webContents.openDevTools();
+    }
 
     newWindow.on('closed', () => {
         jsonWindows.splice(_.indexOf(newWindow), 1);

@@ -1,0 +1,67 @@
+div.tree, span.tree  {
+    font-family: Arial;
+    font-weight: bold;
+    line-height: 150%;
+}
+
+div.tree-root {
+
+}
+div.tree-node-main {
+    empty-cells: show;
+    display: inline;
+}
+
+div.tree-node {
+    padding-left: 20px;
+}
+
+span.tree-node-close-spacer {
+    padding-left: 20px;
+}
+
+div.tree-node-no-expander {
+    padding-left: 20px;
+}
+
+div.tree-node-expander {
+    padding-left: 20px;
+    empty-cells: show;
+    display: inline;
+    background-size: 12px 12px;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+}
+
+div.tree-node-expander-expand {
+    background-image: url("../img/expand.png");
+}
+
+div.tree-node-expander-collapse {
+    background-image: url("../img/collapse.png");
+}
+
+div.tree-node-show-more {
+    padding-left: 40px;
+    color: cornflowerblue;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: smaller;
+}
+
+span.tree-node-val-boolean {
+    color: darkred;
+}
+
+span.tree-node-val-number {
+    color: darkgreen;
+}
+
+span.tree-node-val-null {
+    color: dimgray;
+}
+
+span.tree-node-val-string {
+    color: purple;
+}

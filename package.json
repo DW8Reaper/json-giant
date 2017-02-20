@@ -1,7 +1,7 @@
 {
   "name": "json-giant",
   "productName": "JSON Giant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "JSON Viewer for Giant Files",
   "main": "app/main.js",
   "scripts": {
@@ -19,19 +19,32 @@
   "license": "MIT",
   "dependencies": {
     "angular": "^1.6.2",
-    "angularjs": "0.0.1",
     "bootstrap": "^3.3.7",
     "jquery": "^3.1.1",
     "jsonpath": "^0.2.10",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "requirejs": "^2.3.2"
   },
   "devDependencies": {
+    "angular-mocks": "^1.6.2",
+    "browserify-istanbul": "^2.0.0",
     "electron": "^1.4.15",
     "electron-packager": "^8.5.1",
     "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-electron": "^5.0.0",
+    "grunt-karma": "^2.0.0",
+    "grunt-open": "^0.2.3",
     "grunt-run": "^0.6.0",
+    "jasmine": "^2.5.3",
+    "karma": "^1.4.1",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-coverage": "^1.1.1",
+    "karma-jasmine": "^1.1.0",
+    "karma-requirejs": "^1.1.0",
+    "karma-threshold-reporter": "^0.1.15",
+    "live-server": "^1.2.0",
     "nlf": "^1.4.3"
   }
 }

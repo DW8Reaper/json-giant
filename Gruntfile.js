@@ -4,8 +4,9 @@
 
 let _ = require('lodash');
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
     'use strict';
+
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -21,6 +22,13 @@ module.exports = function(grunt) {
                     "."
                 ]
             },
+            "electron-debug": {
+                cmd: "node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+                args: [
+                    ".",
+                    "debug-mode"
+                ]
+            },
             "make-osx-dmg": {
                 cmd: "hdiutil",
                 args: [
@@ -33,22 +41,48 @@ module.exports = function(grunt) {
                     "build/<%= pkg.productName %>-darwin-x64",
                     "<%=dmgPath%>"
                 ]
+            },
+            "karma":{
+                cmd: 'karma',
+                args: [
+                    'start',
+                    'karma.conf.js'
+                ]
             }
         },
         electron: {
             osx: {
                 options: {
-                    dir: './',
+                    dir: '.',
                     name: '<%= pkg.productName %>',
                     out: 'build',
                     electronVersion: "1.4.15",
-                    overwrite : true,
+                    overwrite: true,
                     platform: 'darwin',
                     arch: 'x64',
                     asar: true,
-                    "app-version" : '<%= pkg.version %>',
+                    "app-version": '<%= pkg.version %>',
                     "app-bundle-id": "com.broken-d.json-giant"
                 }
+            }
+        },
+        karma: {
+            unit: {
+                configFile: 'karma.conf.js',
+                singleRun: false,
+                reporters: ['progress']
+            },
+            coverage: {
+                configFile: 'karma.conf.js',
+                singleRun: true,
+                logLevel: 'ERROR',
+                reporters: ['progress', 'coverage']
+            }
+        },
+        open: {
+            coverage: {
+                path: './build/coverage/index.html',
+                app: 'Google Chrome'
             }
         }
     });
@@ -56,17 +90,21 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-run');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-electron');
+    grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-open');
 
-    grunt.registerTask('run-app', 'Run JSON Giant electron app', ['run:electron']);
-    grunt.registerTask('default', ['run-app']);
+    grunt.registerTask('app-run', 'Run JSON Giant electron app', ['run:electron']);
+    grunt.registerTask('app-debug', 'Run JSON Giant electron app', ['run:electron-debug']);
 
-    grunt.registerTask('update-used-libs', 'Update list of used libraries with license information', function () {
+    grunt.registerTask('app-update-used-libs', 'Update list of used libraries with license information', function () {
         let done = this.async();
 
         var nlf = require('nlf');
 
-        nlf.find({production: true, directory: './' }, function (err, licenses) {
-            grunt.log.error(err);
+        nlf.find({production: true, directory: './'}, function (err, licenses) {
+            if (err) {
+                grunt.log.error(err);
+            }
 
             let used_libraries = [];
 
@@ -105,7 +143,7 @@ module.exports = function(grunt) {
 
     });
 
-    grunt.registerTask('build-app', 'Build JSON Giant', function () {
+    grunt.registerTask('app-build', 'Build JSON Giant', function () {
         //grunt.config.set('electron.osx.options.version', grunt.config.get('pkg.app-version'));
         grunt.task.run('clean:release');
 
@@ -116,6 +154,30 @@ module.exports = function(grunt) {
 
         grunt.task.run('run:make-osx-dmg');
 
+    });
+
+    grunt.registerTask('app-test', 'Run unit tests for JSON Giant', ['test-http-server', 'karma:unit']);
+
+    grunt.registerTask('app-coverage', 'Run unit tests for JSON Giant', ['test-http-server', 'karma:coverage', 'open:coverage']);
+
+
+
+    // task to start an HTTP server to serve all file for unit tests so that we don't have to redefine all of them
+    // in karma config
+    grunt.registerTask('test-http-server', function () {
+        var liveServer = require("live-server");
+
+        var params = {
+            port: 8080, // Set the server port. Defaults to 8080.
+            host: "127.0.0.1", // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
+            root: ".", // Set root directory that's being served. Defaults to cwd.
+            open: false, // When false, it won't load your browser by default.
+            ignore: 'scss,my/templates', // comma-separated string for paths to ignore
+            file: "", // When set, serve this file for every 404 (useful for single-page applications)
+            wait: 1000, // Waits for all changes, before reloading. Defaults to 0 sec.
+            logLevel: 2, // 0 = errors only, 1 = some, 2 = lots
+        };
+        liveServer.start(params);
     });
 
 };
