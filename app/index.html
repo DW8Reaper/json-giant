@@ -1,22 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="jsonGiant">
 <head>
     <meta charset="UTF-8">
     <title>JSON Giant</title>
-    <script data-main="require-config" src="../node_modules/requirejs/require.js"></script>
+
+    <script src="../node_modules/jquery/dist/jquery.js"></script>
+    <script src="globalizeLibs.js"></script>
+
+    <script src="../node_modules/angular/angular.js"></script>
+    <script src="../node_modules/lodash/lodash.js"></script>
+    <script src="json-giant.js"></script>
+    <script src="components/json-tree.js"></script>
 
     <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet"/>
     <link href="css/json-tree.css" rel="stylesheet"/>
+
     <style>
         body {
             padding-top: 70px;
+            padding-bottom: 70px;
         }
 
         /* ensure body is not behind the navbar
           </style>
 </head>
-<body ng-controller="defaultCtrl">
+<body ng-controller="defaultCtrl" ng-cloak>
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
@@ -55,9 +64,29 @@
 
 <div class="container-fluid">
     <div class="container-fluid">
-        <json-tree json-content="data" max-nodes="200" json-filter="activeJSONFilter"></json-tree>
+        <json-tree json-content="data" max-nodes="200" json-filter="activeJSONFilter"
+                   on-error="onSyntaxError($event)"
+                   on-node-mouse-over="onNodeMouseOver($event)"
+                   on-node-click="onNodeMouseClick($event)"></json-tree>
     </div>
 </div>
 
+
+<nav class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container" ng-if="selectedNode">
+
+        <Button class="btn btn-default navbar-btn" ng-click="copySelectedNode()" title="Copy selected node">
+                            <span class="glyphicon glyphicon-copy" aria-hidden="true" data-toggle="tooltip"
+                            ></span> Node
+        </Button>
+
+        <Button class="btn btn-default navbar-btn" ng-click="copySelectedPath()" title="Copy selected path">
+                            <span class="glyphicon glyphicon-copy" aria-hidden="true" data-toggle="tooltip"
+                            ></span> Path
+        </Button>
+
+        <p class="navbar-text">{{selectedNode.path.path}}</p>
+    </div>
+</nav>
 </body>
 </html>

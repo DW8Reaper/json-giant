@@ -11,18 +11,30 @@
         })
         .service('jsonpath', function () {
             'use strict';
-            return require('jsonpath');
-
+            // let jp = null;
+            // jp = require('jsonpath-plus');
+            // return jp;
+            return require('jsonpath-plus');
         })
-        .controller('defaultCtrl', function ($scope, $timeout, $window, electron) {
+        .controller('defaultCtrl', function ($scope, $timeout, $window, electron, jsonpath) {
 
             $scope.filename = "";
             $scope.activeJSONFilter = null;
             $scope.data = {
                 example: "JSON File",
-                "sub-object": {"sub-value-is-null": null},
+                "sub-obj1": {"sub-value-is-null": null},
                 "a-number": 30,
                 "a-boolean": true,
+                "sub-obj2" : {
+                    "array" : [
+                        1, 2, 3
+                    ]
+                },
+                "sub-obj3" : {
+                    "array" : [
+                        4,5,6
+                    ]
+                },
                 "an-array": [
                     "zoom",
                     10,
@@ -71,9 +83,11 @@
                     if (!_.isString(filter)|| filter.length == 0) {
                         $scope.activeJSONFilter = null;
                     } else {
-                        let jsonpath = require('jsonpath');
                         try {
-                            $scope.activeJSONFilter = jsonpath.stringify(jsonpath.parse(filter));
+
+                            //jsonpath({path: filter, json: {}});
+                            $scope.activeJSONFilter = filter;
+                            $scope.$apply();
                         } catch (e) {
                             electron.dialog.showErrorBox('Invalid JSON Path "' + filter + '"', e.message);
                         }
@@ -81,13 +95,42 @@
 
                 }, 0);
 
-            }
+            };
+
+            $scope.copySelectedNode = function() {
+                'use strict';
+                if ($scope.selectedNode) {
+                    const clipboard = electron.clipboard;
+                    clipboard.writeText(JSON.stringify($scope.selectedNode.node));
+                }
+            };
+            $scope.copySelectedPath = function() {
+                'use strict';
+                if ($scope.selectedNode) {
+                    const clipboard = electron.clipboard;
+                    clipboard.writeText($scope.selectedNode.path.path);
+                }
+            };
+
             $scope.jsonFilterKeyPress = function ($event, filter) {
                 "use strict";
                 if ($event.keyCode === 13) {
                     $scope.filterChanged(filter);
                 }
-            }
+            };
+
+            $scope.onNodeMouseClick = function(data) {
+                'use strict';
+
+                $scope.selectedNode = data;
+                $scope.$digest();
+
+            };
+
+            $scope.onSyntaxError = function(e) {
+                'use strict';
+                 electron.dialog.showErrorBox('Invalid JSON Path "' + $scope.activeJSONFilter + '"', e.message);
+            };
 
             function loadNewJSON(content, contentName) {
 

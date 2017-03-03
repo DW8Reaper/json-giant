@@ -7,6 +7,9 @@ let _ = require('lodash');
 module.exports = function (grunt) {
     'use strict';
 
+    function getOSXPackage() {
+        return 'build/<%= pkg.productName %>-darwin-x64';
+    }
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -38,7 +41,7 @@ module.exports = function (grunt) {
                     "-volname",
                     "<%= pkg.productName %>",
                     "-srcfolder",
-                    "build/<%= pkg.productName %>-darwin-x64",
+                    getOSXPackage(),
                     "<%=dmgPath%>"
                 ]
             },
@@ -46,7 +49,9 @@ module.exports = function (grunt) {
                 cmd: 'karma',
                 args: [
                     'start',
-                    'karma.conf.js'
+                    'karma.conf.js',
+                    '--log-level',
+                    'debug'
                 ]
             }
         },
@@ -62,7 +67,38 @@ module.exports = function (grunt) {
                     arch: 'x64',
                     asar: true,
                     "app-version": '<%= pkg.version %>',
-                    "app-bundle-id": "com.broken-d.json-giant"
+                    "app-bundle-id": "com.broken-d.json-giant",
+                    "app-copyright" : "Copyright 2016 De Wildt van Reenen"
+                }
+            },
+            windows: {
+                options: {
+                    dir: '.',
+                    name: '<%= pkg.productName %>',
+                    out: 'build',
+                    electronVersion: "1.4.15",
+                    overwrite: true,
+                    platform: 'win32',
+                    arch: 'all',
+                    asar: true,
+                    "app-version": '<%= pkg.version %>',
+                    "app-bundle-id": "com.broken-d.json-giant",
+                    "app-copyright" : "Copyright 2016 De Wildt van Reenen"
+                }
+            },
+            linux: {
+                options: {
+                    dir: '.',
+                    name: '<%= pkg.productName %>',
+                    out: 'build',
+                    electronVersion: "1.4.15",
+                    overwrite: true,
+                    platform: 'linux',
+                    arch: 'all',
+                    asar: true,
+                    "app-version": '<%= pkg.version %>',
+                    "app-bundle-id": "com.broken-d.json-giant",
+                    "app-copyright" : "Copyright 2016 De Wildt van Reenen"
                 }
             }
         },
@@ -84,7 +120,43 @@ module.exports = function (grunt) {
                 path: './build/coverage/index.html',
                 app: 'Google Chrome'
             }
-        }
+        },
+        rename: {
+            "osx-license" : {
+
+            }
+        },
+        copy: {
+            "osx-license": {
+                files: [
+                    // copy original license files
+                    {
+                        expand: true,
+                        src: [(getOSXPackage() + '/LICENSE')],
+                        dest: (getOSXPackage() + '/'),
+                        filter: 'isFile',
+                        flatten: true,
+                        rename: function(dest, src) {
+                            return dest + src + '-ELECTRON';
+                        }
+                    },
+                    {
+                        expand: true,
+                        src: ['app/used_libraries.json'],
+                        dest: (getOSXPackage() + '/'),
+                        filter: 'isFile',
+                        flatten: true
+                    },
+                    {
+                        expand: true,
+                        src: ['app/'],
+                        dest: (getOSXPackage() + '/'),
+                        filter: 'isFile',
+                        flatten: true
+                    },
+                ],
+            },
+        },
     });
 
     grunt.loadNpmTasks('grunt-run');
@@ -92,6 +164,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-electron');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-open');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
     grunt.registerTask('app-run', 'Run JSON Giant electron app', ['run:electron']);
     grunt.registerTask('app-debug', 'Run JSON Giant electron app', ['run:electron-debug']);
@@ -150,9 +223,17 @@ module.exports = function (grunt) {
         let excludeList = grunt.file.expand({}, ['*', '!app', '!package.json', '!node_modules']);
         grunt.config.set('electron.osx.options.ignore', excludeList);
 
-        grunt.task.run('electron');
-
-        grunt.task.run('run:make-osx-dmg');
+        if (grunt.option('osx')) {
+            grunt.task.run('electron:osx');
+            grunt.task.run('copy:osx-license');
+            grunt.task.run('run:make-osx-dmg');
+        } else if (grunt.option('windows')) {
+            grunt.task.run('electron:windows');
+        } else if (grunt.option('linux')) {
+            grunt.task.run('electron:linux');
+        } else {
+            grunt.task.run('electron');
+        }
 
     });
 

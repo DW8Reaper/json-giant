@@ -153,7 +153,9 @@ function createWindow() {
     let newWindow = new BrowserWindow({
         width: 1060,
         height: 850,
-        "node-integration": true
+        // webPreferences: {
+        //
+        // }
     });
 
     newWindow.loadURL(url.format({

@@ -17,16 +17,34 @@
                 const ctrl = this;
                 ctrl.basePath = [];
 
+                let jsonData;  // the effective json we are displaying (after filters if any)
+                let rootPaths = [];
+                let isFiltered = false;
+
+                function jsonItemFound(value, type, details, d){
+                    rootPaths.push(details.path);
+                }
+
                 ctrl.$onChanges = function () {
                     $element.empty();
+                    rootPaths = [];
+                    jsonData = ctrl.jsonContent;
+                    isFiltered = false;
 
-                    let jsonData = ctrl.jsonContent;
                     if (_.isString(ctrl.jsonFilter) && ctrl.jsonFilter.length > 0) {
                         try {
-                            jsonData = jsonpath.query(ctrl.jsonContent, ctrl.jsonFilter);
+
+                            jsonData = jsonpath({
+                                path: ctrl.jsonFilter,
+                                json: ctrl.jsonContent,
+                                wrap: true,
+                                //preventEval: true,
+                                callback: jsonItemFound
+                            });
+                            isFiltered = true;
                         } catch (e) {
                             if (_.isFunction(ctrl.onError)) {
-                                ctrl.onError(e);
+                                ctrl.onError({"$event": e});
                             } else {
                                 throw e;
                             }
@@ -182,15 +200,9 @@
                     // add container for node name and value for processing node events
                     let childDataContainer = angular.element('<div class="tree tree-node-main"></div>');
                     childRoot.append(childDataContainer);
-                    if (_.isFunction(ctrl.onNodeMouseOver)) {
-                        childDataContainer.on('mouseover', nodeMouseOver);
-                    }
-                    if (_.isFunction(ctrl.onNodeMouseOut)) {
-                        childDataContainer.on('mouseout', nodeMouseOut);
-                    }
-                    if (_.isFunction(ctrl.onNodeClick)) {
-                        childDataContainer.on('click', nodeClick);
-                    }
+                    childDataContainer.on('mouseover', nodeMouseOver);
+                    childDataContainer.on('mouseout', nodeMouseOut);
+                    childDataContainer.on('click', nodeClick);
 
                     // Create intro
                     if (name !== null) {
@@ -261,21 +273,54 @@
                     }
                 }
 
+                function isRootObject(value) {
+                    return value.parent == null;
+                }
+
                 function buildNodePath(node) {
-                    let path = [];
+                    let path = "";
+                    let pathStart = null;
                     let currentNode = node;
+                    let lastNode = currentNode;
+
+
                     while (currentNode && currentNode.parent) {
+                        // filtered trees have a wrapper around that is not part of the path
+                        lastNode = currentNode;  // last path
+
+                        let part = "";
                         if (currentNode.index >= 0) {
                             //array element
-                            path.push(currentNode.index)
+                            part = '[' + currentNode.index.toString() + ']';
                         } else {
-                            path.push(currentNode.name)
+                            part = '[\'' + currentNode.name.toString() + '\']';
+                        }
+
+                        if (isFiltered && isRootObject(currentNode.parent)) {
+                            // store the starting object in the path separately so we can make relative paths
+                            pathStart = part;
+                        } else {
+                            path = part + path;
                         }
 
                         currentNode = currentNode.parent;
                     }
 
-                    return path.reverse();
+                    // get root path
+                    var filteredPath = null;
+                    if (!isFiltered) {
+                        path = '$' + path;
+                    } else {
+                        filteredPath = '$' + pathStart + path;  // full path in filtered result
+                        for (let i = 0; i < rootPaths.length; i++) {
+                            if (jsonData[i] === lastNode.nodeValue) {
+                                path = rootPaths[i] + path;
+                                break;
+                            }
+                        }
+                    }
+
+                    return {path: path, filteredPath: filteredPath};
                 }
 
                 function nodeMouseOver(e) {
@@ -298,7 +343,9 @@
                     let node = angular.element(e.target);
                     let data = findTreeNode(node);
                     if (data != null) {
-                        event(buildNodePath(data));
+                        let value = {};
+                        value[data.name] = data.nodeValue;
+                        event({"$event": {path: buildNodePath(data), node: value}});
                     }
 
                 }
