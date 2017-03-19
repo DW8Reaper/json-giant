@@ -5,8 +5,21 @@ div.tree, span.tree  {
 }
 
 div.tree-root {
-
 }
+
+span.tree-node-name {
+    cursor: default;
+}
+
+div.tree-node.selected {
+    border: dotted darkblue 1px;
+    background-color: lavender;
+}
+
+div.tree-node.normal {
+    border: 1px solid transparent;
+}
+
 div.tree-node-main {
     empty-cells: show;
     display: inline;
@@ -14,6 +27,7 @@ div.tree-node-main {
 
 div.tree-node {
     padding-left: 20px;
+
 }
 
 span.tree-node-close-spacer {
@@ -22,6 +36,17 @@ span.tree-node-close-spacer {
 
 div.tree-node-no-expander {
     padding-left: 20px;
+}
+
+div.tree-root-child-container {
+    margin-left: 0px;
+}
+
+div.tree-node-child-container {
+    margin-left: 10px;
+    border-left:  gray 0.5px;
+    border-left-style: dashed;
+    border-left-: dashed;
 }
 
 div.tree-node-expander {

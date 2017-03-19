@@ -62,8 +62,9 @@ describe('JSON Tree control', function () {
         nodeClicked: function (path) {
             delegate.nodePath = path.path;
             delegate.filteredPath = path.filteredPath;
-        }
-    }
+        },
+        ctrlCreated: function () {}
+    };
 
     //****************************************************************************************************************//
     // Setup scenarios
@@ -82,6 +83,7 @@ describe('JSON Tree control', function () {
         spyOn(delegate, 'nodeMouseOver').and.callThrough();
         spyOn(delegate, 'nodeMouseOut').and.callThrough();
         spyOn(delegate, 'nodeClicked').and.callThrough();
+        spyOn(delegate, 'ctrlCreated').and.callThrough();
 
         controller = $componentController('jsonTree', {
                 $scope: scope,
@@ -95,8 +97,8 @@ describe('JSON Tree control', function () {
             onError: delegate.errorMessage,
             onNodeMouseOver: delegate.nodeMouseOver,
             onNodeMouseOut: delegate.nodeMouseOut,
-            onNodeClick: delegate.nodeClicked
-
+            onNodeClick: delegate.nodeClicked,
+            onCreated: delegate.ctrlCreated
         });
     }));
 
@@ -108,6 +110,16 @@ describe('JSON Tree control', function () {
     //****************************************************************************************************************//
     // Scenarios
     //****************************************************************************************************************//
+    // it('notifies container when it is initialized', function () {
+    //     try {
+    //         controller.$onInit();
+    //     } catch (e) {
+    //         errorCnt++;
+    //     }
+    //
+    //     expect(delegate.ctrlCreated).toHaveBeenCalledWith({"$event":{ controller: controller}});
+    // });
+
     it('does not apply a null filter', function () {
 
         try {
@@ -150,7 +162,7 @@ describe('JSON Tree control', function () {
     it('displays an empy view if all nodes are filtered out', function () {
 
         try {
-            controller.jsonFilter = "some filter";
+            controller.jsonFilter = "$.some_unknown_node";
             controller.$onChanges();
         } catch (e) {
             errorCnt++;
@@ -170,14 +182,14 @@ describe('JSON Tree control', function () {
     it('Reports error messages for invalid filters', function() {
 
         try {
-            controller.jsonFilter = "$[?(@array)]";  // path with missing . in @array
+            controller.jsonFilter = "$$$$$$$";  // path with missing . in @array
             controller.$onChanges();
         } catch (e) {
             errorCnt++;
         }
 
         expect(delegate.errorMessage).toHaveBeenCalled();
-        expect(delegate.error.message).toBeDefined();
+        expect(delegate.error.$event.message).toBeDefined();
         expect(jp.jsonpath).toHaveBeenCalled();
     });
 
@@ -254,11 +266,11 @@ describe('JSON Tree control', function () {
         // skip root node go to first child "a"
         delegate.reset();
         angular.element('div.tree div.tree-node-main', rootElement).eq(1).trigger('mouseover');
-        expect(delegate.nodeMouseOver).toHaveBeenCalledWith({"$event": {path: {path: "$['a']", filteredPath: null}, node: testData.a}});
+        expect(delegate.nodeMouseOver).toHaveBeenCalledWith({"$event": {path: {path: "$['a']", filteredPath: null}, node: {a: testData.a}}});
 
         delegate.reset();
         angular.element('div.tree div.tree-node-main', rootElement).eq(1).trigger('mouseout');
-        expect(delegate.nodeMouseOut).toHaveBeenCalledWith({"$event": {path: {path:"$['a']", filteredPath: null}, node: testData.a}});
+        expect(delegate.nodeMouseOut).toHaveBeenCalledWith({"$event": {path: {path:"$['a']", filteredPath: null}, node: {a: testData.a}}});
 
         // expand "a"
         angular.element('div:nth-child(1) div.tree-node-expander', rootElement).eq(0).trigger('click');
@@ -266,7 +278,7 @@ describe('JSON Tree control', function () {
         // check child paths for "a"->"child3"
         delegate.reset();
         angular.element('div.tree div.tree-node-main', rootElement).eq(4).trigger('mouseover');
-        expect(delegate.nodeMouseOver).toHaveBeenCalledWith({"$event": {path: {path: "$['a']['child3']", filteredPath: null}, node: testData.a.child3}});
+        expect(delegate.nodeMouseOver).toHaveBeenCalledWith({"$event": {path: {path: "$['a']['child3']", filteredPath: null},  node: {child3:testData.a.child3}}});
 
 
         // expand "child3"
@@ -288,12 +300,12 @@ describe('JSON Tree control', function () {
         // skip root node go to first child "a"
         delegate.reset();
         angular.element('div.tree div.tree-node-main', rootElement).eq(1).trigger('click');
-        expect(delegate.nodeClicked).toHaveBeenCalledWith({"$event": {path: {path: "$['a']", filteredPath: null}, node: testData.a}});
+        expect(delegate.nodeClicked).toHaveBeenCalledWith({"$event": {path: {path: "$['a']", filteredPath: null}, node: {a : testData.a}}});
 
         // check child paths for "a"->"child3"
         delegate.reset();
         angular.element('div.tree div.tree-node-main', rootElement).eq(4).trigger('click');
-        expect(delegate.nodeClicked).toHaveBeenCalledWith({"$event": {path: {path: "$['a']['child3']", filteredPath: null}, node: testData.a.child3}});
+        expect(delegate.nodeClicked).toHaveBeenCalledWith({"$event": {path: {path: "$['a']['child3']", filteredPath: null}, node: {child3 : testData.a.child3}}});
 
     });
 

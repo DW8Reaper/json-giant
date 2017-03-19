@@ -61,14 +61,15 @@ module.exports = function (grunt) {
                     dir: '.',
                     name: '<%= pkg.productName %>',
                     out: 'build',
-                    electronVersion: "1.4.15",
+                    electronVersion: "1.6.2",
                     overwrite: true,
                     platform: 'darwin',
                     arch: 'x64',
                     asar: true,
-                    "app-version": '<%= pkg.version %>',
-                    "app-bundle-id": "com.broken-d.json-giant",
-                    "app-copyright" : "Copyright 2016 De Wildt van Reenen"
+                    icon: 'AppIcon.icns',
+                    appVersion: '<%= pkg.version %>',
+                    appBundleId: "com.broken-d.json-giant",
+                    appCopyright: "Copyright 2016 De Wildt van Reenen"
                 }
             },
             windows: {
@@ -76,14 +77,15 @@ module.exports = function (grunt) {
                     dir: '.',
                     name: '<%= pkg.productName %>',
                     out: 'build',
-                    electronVersion: "1.4.15",
+                    electronVersion: "1.6.2",
                     overwrite: true,
                     platform: 'win32',
                     arch: 'all',
                     asar: true,
-                    "app-version": '<%= pkg.version %>',
-                    "app-bundle-id": "com.broken-d.json-giant",
-                    "app-copyright" : "Copyright 2016 De Wildt van Reenen"
+                    icon: 'AppIcon.ico',
+                    appVersion: '<%= pkg.version %>',
+                    appBundleId: "com.broken-d.json-giant",
+                    appCopyright: "Copyright 2016 De Wildt van Reenen"
                 }
             },
             linux: {
@@ -91,14 +93,15 @@ module.exports = function (grunt) {
                     dir: '.',
                     name: '<%= pkg.productName %>',
                     out: 'build',
-                    electronVersion: "1.4.15",
+                    electronVersion: "1.6.2",
                     overwrite: true,
                     platform: 'linux',
                     arch: 'all',
                     asar: true,
-                    "app-version": '<%= pkg.version %>',
-                    "app-bundle-id": "com.broken-d.json-giant",
-                    "app-copyright" : "Copyright 2016 De Wildt van Reenen"
+                    icon: 'AppIcon.ico',
+                    appVersion: '<%= pkg.version %>',
+                    appBundleId: "com.broken-d.json-giant",
+                    appCopyright: "Copyright 2016 De Wildt van Reenen"
                 }
             }
         },
@@ -236,6 +239,8 @@ module.exports = function (grunt) {
         }
 
     });
+
+    grunt.registerTask('app-test', 'Run unit tests for JSON Giant', ['test-http-server', 'karma:unit']);
 
     grunt.registerTask('app-test', 'Run unit tests for JSON Giant', ['test-http-server', 'karma:unit']);
 

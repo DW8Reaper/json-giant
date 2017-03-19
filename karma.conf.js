@@ -108,11 +108,11 @@ module.exports = function (config) {
 
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
-        singleRun: false,
+        singleRun: true,
 
         // Concurrency level
         // how many browser should be started simultaneous
-        concurrency: Infinity,
+        concurrency: 1,
 
         // optionally, configure the reporter
         coverageReporter: {
@@ -131,8 +131,8 @@ module.exports = function (config) {
 
         plugins: [
             "karma-electron",
-            //"karma-electron-launcher",
-            "karma-chrome-launcher",
+            "karma-electron-launcher",
+            //"karma-chrome-launcher",
             "karma-coverage",
             "karma-jasmine",
             "karma-threshold-reporter"
