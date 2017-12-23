@@ -161,12 +161,18 @@ module.exports = function(grunt) {
         },
         watch: {
             electronMain: {
-                files: ['app/main.js'],
-                tasks: ['electron-restart']
+                files: ['app/main.js', 'app/index.html'],
+                tasks: ['electron-restart'],
+                options: {
+                    spawn: false
+                }
             },
             electronReload: {
                 files: ['app/**/*.js', 'app/**/*.css', 'app/**/*.html', 'app/**/*.json'],
-                tasks: ['electron-reload']
+                tasks: ['electron-reload'],
+                options: {
+                    spawn: false
+                }
             }
         }
     });
@@ -283,6 +289,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('serve', function() {
         electronServer.start();
+        grunt.task.run('watch');
     });
 
     grunt.registerTask('electron-restart', function(){
@@ -290,7 +297,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('electron-reload', function(){
-        electronServer.reload();
+        electronServer.restart();
     });
 
 };
