@@ -1,0 +1,22 @@
+#!/bin/bash
+
+base_dir=`pwd`
+pid=""
+
+function ctrl_c {
+    echo 
+    echo
+    echo "exiting..."
+    kill ${pid}
+    exit 0
+}
+
+ng build --base-href ${base_dir}/dist/  --aot --sourcemaps -w &
+pid=$!
+trap "ctrl_c" INT
+
+sleep 9s
+
+electron . debug-mode
+
+ctrl_c()

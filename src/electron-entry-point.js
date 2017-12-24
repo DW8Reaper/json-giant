@@ -2,17 +2,24 @@
  * Created by dewildt on 2/7/17.
  */
 
-
-
 const _ = require('lodash');
 
-const {app, BrowserWindow, Menu} = require('electron');
+const {app, BrowserWindow, Menu, globalShortcut} = require('electron');
 const path = require('path');
 const url = require('url');
 
 let jsonWindows = [];
 
 function appLoaded() {
+    globalShortcut.register('Esc', () => {
+        'use strict';
+        let focusedWindow = BrowserWindow.getFocusedWindow();
+        if (focusedWindow) {
+            //console.log("finding 1 " + focusedWindow.webContents);
+            focusedWindow.webContents.send('do-escape');
+        }
+    });
+
 
 
     const template = [
@@ -40,6 +47,14 @@ function appLoaded() {
                 },
                 {
                     role: "paste"
+                },
+                {
+                    role: "separator"
+                },
+                {
+                    label: "Find",
+                    accelerator: "CmdOrCtrl+F",
+                    click: onFind
                 }
             ]
         },
@@ -80,7 +95,7 @@ function appLoaded() {
                 }
             ]
         }
-    ]
+    ];
 
     if (process.platform === 'darwin') {
         template.unshift({
@@ -115,7 +130,8 @@ function appLoaded() {
                     role: 'quit'
                 }
             ]
-        })
+        });
+        
         // Window menu.
         template[3].submenu = [
             {
@@ -190,6 +206,19 @@ app.on('activate', () => {
     }
 });
 
+function onFind() {
+    'use strict';
+    //console.log("finding");
+    let focusedWindow = BrowserWindow.getFocusedWindow();
+    //console.log("finding 1 " + focusedWindow.webContents);
+    focusedWindow.webContents.send('do-find');
+
+//    focusedWindow.webContents.findInPage("ap");
+
+
+    //console.log("finding 2");
+
+}
 
 function onNewWindow(){
     "use strict";
