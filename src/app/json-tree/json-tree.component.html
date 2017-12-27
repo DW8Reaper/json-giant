@@ -1,0 +1,31 @@
+
+  <tree-root #tree [nodes]="nodes" [options]="options">
+
+    <ng-template #treeNodeFullTemplate let-node let-index="index" let-templates="templates">
+      <div [class]="node.getClass()" [class.tree-node]="true" [class.tree-node-focused]="node.isFocused && node.isLeaf" [class.tree-node-active]="node.isActive"
+        [class.tree-node-expanded]="node.isExpanded && node.hasChildren" [class.tree-node-collapsed]="node.isCollapsed && node.hasChildren"
+        [class.tree-node-leaf]="node.isLeaf" [class.container-node-border]="isContainerNode(node.data)" [class.expandable-guy]="isContainerNode(node.data)"
+        [class.other-guy]="!isContainerNode(node.data)" [class.ping-pong]="node.isActive " class="no-shadow">
+
+        <tree-node-drop-slot *ngIf="index === 0" [dropIndex]="node.index" [node]="node.parent">
+            
+        </tree-node-drop-slot>
+        
+        <tree-node-wrapper class="no-shadow" [node]="node" [index]="index" [templates]="templates">          
+            <ng-template #treeNodeTemplate let-node let-index="index">
+                <span class="node-intro" [class.non-toggler-spacing]='node.isLeaf'>{{ getNodeIntro(node.data) }}</span>
+                <span>{{ getNodeValue(node.data) }}</span>
+              </ng-template>            
+        </tree-node-wrapper>
+        
+        <tree-node-children [node]="node" [templates]="templates">
+        </tree-node-children>
+        <span *ngIf="!node.isLeaf" class="end-tag">{{ getNodeOutro(node.data) }}</span>
+        <tree-node-drop-slot [dropIndex]="node.index + 1" [node]="node.parent">
+        </tree-node-drop-slot>
+      </div>
+    </ng-template>
+
+
+  </tree-root>
+

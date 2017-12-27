@@ -12,13 +12,14 @@ fdescribe('Parser', () => {
     });
 
     fit('should parse an object', () => {
-        const rootNode = parser.parse(`{"key1": "b", "key2":"c", "key3":null,"key4":true,"key5":false,"key6":-100.58}`);
+        const rootNode = parser.parse(`{"key1": "b", "key2":"c", "key3":null,"key4":true,"key5":false,"key6":-100.58,"key7":{"key8": null}}`);
+        
         const nodeList = parser.allNodes;
 
         expect(nodeList[0]).toBe(rootNode);
         expect(rootNode.type).toBe(JsonNodeType.Object);
         expect(rootNode.start).toBe(0);
-        expect(rootNode.end).toBe(77);
+        expect(rootNode.end).toBe(99);
         expect(rootNode.previousNode).toBeNull();
         expect(rootNode.data).toBeDefined();
         expect(has(rootNode.data, 'key1')).toBeTruthy();
@@ -51,6 +52,13 @@ fdescribe('Parser', () => {
         // check for object key6
         expectNode(nodeList[11], JsonNodeType.Key, rootNode, `"key6"`, nodeList[12]);
         expectNode(nodeList[12], JsonNodeType.Value, nodeList[11], `-100.58`, -100.58);
+
+        // check for object key6
+        expectNode(nodeList[13], JsonNodeType.Key, rootNode, `"key7"`, nodeList[14]);
+        expectNode(nodeList[14], JsonNodeType.Object, nodeList[13], `{"key8": null}`);
+
+        // expectNode(nodeList[13], JsonNodeType.Key, rootNode, `"key7"`, nodeList[14]);
+        // expectNode(nodeList[14], JsonNodeType.Object, nodeList[13], `{"key8", null}`);
     });
 
     fit('Should parse and array with values', () => {

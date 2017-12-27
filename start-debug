@@ -11,7 +11,7 @@ function ctrl_c {
     exit 0
 }
 
-ng build --base-href ${base_dir}/dist/  --aot --sourcemaps -w &
+ng build --base-href ${base_dir}/dist/  --sourcemaps -w &
 pid=$!
 trap "ctrl_c" INT
 

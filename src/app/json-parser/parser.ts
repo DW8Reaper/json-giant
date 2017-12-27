@@ -36,20 +36,29 @@ export enum DataType {
  * JsonNode base class to represent all the details of a node in the JSON document that was parsed
  */
 export abstract class JsonNode {
+    public id: number;
     public type: JsonNodeType;
     public previousNode: JsonNode;
     public start: number;
     public end: number;
     public data: any;
     public userData: any;
+    public expanded: boolean = false;
     public readonly sourceData: string;
 
-    public constructor(sourceData: string, type: JsonNodeType, start: number, end: number = -1) {
+    public constructor(id: number, sourceData: string, type: JsonNodeType, start: number, end: number = -1) {
+        this.id = id;
         this.sourceData = sourceData;
         this.type = type;
         this.start = start;
         this.end = end;
         this.previousNode = null;
+    }
+
+    public abstract get hasChildren();
+
+    public get name(): string {
+        return this.getSourceText();
     }
 
     public getSourceText(): string {
@@ -72,23 +81,39 @@ export abstract class JsonNode {
 
 
 export class JsonObjectNode extends JsonNode {
-    public constructor(sourceData: string, start: number, end: number = -1) {
-        super(sourceData, JsonNodeType.Object, start, end);
+    public constructor(id: number, sourceData: string, start: number, end: number = -1) {
+        super(id, sourceData, JsonNodeType.Object, start, end);
         this.data = {};
     }
+
+    public get hasChildren() {
+        return true;
+    }
+    public get name(): string {
+        const prefix = (this.previousNode instanceof JsonKeyNode) ? `${this.previousNode.name} : ` : '';
+        return prefix + '{';
+    }    
 }
 export class JsonArrayNode extends JsonNode {
-    public constructor(sourceData: string, start: number, end: number = -1) {
-        super(sourceData, JsonNodeType.Array, start, end);
+    public constructor(id: number, sourceData: string, start: number, end: number = -1) {
+        super(id, sourceData, JsonNodeType.Array, start, end);
         this.data = [];
     }
+
+    public get hasChildren() {
+        return true;
+    }  
+    public get name(): string {
+        const prefix = (this.previousNode instanceof JsonKeyNode) ? `${this.previousNode.key} : ` : '';
+        return prefix + '[';
+    }    
 }
 
 export class JsonKeyNode extends JsonNode {
     public readonly key: string;
     
-    public constructor(sourceData: string, start: number, end: number = -1, key: string) {
-        super(sourceData, JsonNodeType.Key, start, end);
+    public constructor(id: number, sourceData: string, start: number, end: number = -1, key: string) {
+        super(id, sourceData, JsonNodeType.Key, start, end);
         this.key = key;
     }
 
@@ -101,13 +126,18 @@ export class JsonKeyNode extends JsonNode {
             return this.previousNode.getPath(humanReadable) + "['" + this.key + "']";
         }        
     }
+
+    public get hasChildren() {
+        return false;
+    }    
+    
 }
 
 export class JsonValueNode extends JsonNode {
     private value: any;
 
-    public constructor(sourceData: string, start: number, end: number = -1, value?: any) {
-        super(sourceData, JsonNodeType.Value, start, end);
+    public constructor(id: number, sourceData: string, start: number, end: number = -1, value?: any) {
+        super(id, sourceData, JsonNodeType.Value, start, end);
         this.value = value;
     }
 
@@ -117,6 +147,18 @@ export class JsonValueNode extends JsonNode {
         }
         return this.value;
     }
+
+    public get hasChildren() {
+        return false;
+    }    
+
+    public get name(): string {
+        if (this.previousNode instanceof JsonKeyNode) {
+            return this.previousNode.key + ' : ' + this.getSourceText();
+        } else {
+            return this.getSourceText();
+        }
+    }      
 }
 
 /**
@@ -147,6 +189,7 @@ export class Parser {
     private collectNodes = false;
     private active: JsonNode;
     private root: JsonNode;
+    private nextId: number = 1;
 
 
     public constructor(eventCallback?: ParserEvents, collectNodes: boolean = false, debug: boolean = false) {
@@ -159,6 +202,7 @@ export class Parser {
         this.states = new Array<State>();
         this.root = null;
         this.active = null;
+        this.nextId = 1;
         if (this.collectNodes) {
             this.allNodes = new Array<JsonNode>();
         }
@@ -466,7 +510,7 @@ export class Parser {
 
     private onValue(sourceData: string, type: DataType, start: number, end: number, parsedValue?: any) {
         // got some value.  v is the value. can be string, double, bool, or null.
-        const newValue = new JsonValueNode(sourceData, start, end, parsedValue);
+        const newValue = new JsonValueNode(this.nextId++, sourceData, start, end, parsedValue);
         this.collectNode(newValue);        
         this.setValue(newValue);
         if (this.eventCallback) {
@@ -481,7 +525,7 @@ export class Parser {
     }
 
     private onKey(sourceData: string, key: any, start: number, end: number) {
-        const newKey = new JsonKeyNode(sourceData, start, end, key);
+        const newKey = new JsonKeyNode(this.nextId++, sourceData, start, end, key);
         this.collectNode(newKey);
         if (!this.active || this.active.type !== JsonNodeType.Object) {
             console.log("invalid type for active");
@@ -496,11 +540,13 @@ export class Parser {
     private onOpenObject(sourceData: string, start: number) {
         // opened an object. key is the first key.
         // Position will be the : after the first key
-        const node = new JsonObjectNode(sourceData, start);
+        const previous = this.active;
+        const node = new JsonObjectNode(this.nextId++, sourceData, start);
         this.collectNode(node);
         this.setValue(node);
 
         this.pushActive(node);
+        node.previousNode = previous;
         if (this.eventCallback) {
             this.eventCallback.onOpenObject(start);
         }        
@@ -509,6 +555,9 @@ export class Parser {
     private onCloseObject(end: number) {
         this.active.end = end;
         this.popActive();
+        if (this.active instanceof JsonKeyNode) {
+            this.popActive();
+        }
         if (this.eventCallback) {
             this.eventCallback.onCloseObject(end);
         }             
@@ -516,7 +565,7 @@ export class Parser {
 
     private onOpenArray(sourceData: string, start: number) {
         // opened an array.
-        const node = new JsonArrayNode(sourceData, start);
+        const node = new JsonArrayNode(this.nextId++, sourceData, start);
         this.collectNode(node);
         this.setValue(node);
         this.pushActive(node);

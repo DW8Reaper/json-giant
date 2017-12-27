@@ -5,9 +5,10 @@
     "sourceMap": true,
     "inlineSourceMap": false,
     "declaration": false,
+    "module": "commonjs",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,    
+    "experimentalDecorators": true,
     "target": "es6",
     "typeRoots": [
       "node_modules/@types"
@@ -15,6 +16,9 @@
     "lib": [
       "es2017",
       "dom"
+    ],
+    "types": [
+      "node"
     ]
   }
 }

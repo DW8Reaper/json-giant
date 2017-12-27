@@ -3,14 +3,18 @@ import { NgModule } from '@angular/core';
 
 
 import { AppComponent } from './app.component';
+import { JsonTreeComponent } from './json-tree/json-tree.component';
 
+import { TreeModule } from 'angular-tree-component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    JsonTreeComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    TreeModule
   ],
   providers: [],
   bootstrap: [AppComponent]

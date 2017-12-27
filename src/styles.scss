@@ -1,0 +1,47 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~angular-tree-component/dist/angular-tree-component.css';
+
+$active-color: #beebff;
+$focused-color: #e7f4f9;
+
+ .node-content-wrapper-active {
+  box-shadow: none;
+  background-color: $active-color;
+  
+ }
+
+ .node-content-wrapper {
+  border-bottom: solid 2px transparent;
+ }
+
+ .node-content-wrapper-focused,
+ .node-content-wrapper:hover {
+  box-shadow: none;
+  background-color: inherit;
+  //background-color: $focused-color;
+  border-bottom: solid 2px chocolate;
+  border-radius: 0px;
+ }
+ 
+ .tree-node-active {
+  box-shadow: none;
+  background-color: $active-color;
+
+}
+
+.tree-node-focused {
+  box-shadow: none;
+  //background-color:$focused-color;
+  
+}
+
+
+
+
+body {
+    padding-top: 48px;
+    padding-bottom: 48px;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}

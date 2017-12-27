@@ -1,20 +1,89 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: {{getChingChongCha()}} </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<nav class="navbar navbar-light fixed-top bg-inverse">
+  <div class="form-inline">
+    <div class="col-xs-2 btn-group btn-group-sm">
 
+      <button type="button" class="btn btn-secondary btn-sm fa fa-files-o" ng-click="copyToClipboard()" data-toggle="tooltip" title="Copy to clipboard">
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm fa fa-paste" ng-click="pasteFromClipboard()" data-toggle="tooltip"
+        title="Load from clipboard">
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm fa fa-folder-o" ng-click="openFile()" data-toggle="tooltip" title="Open file">
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm fa fa-floppy-o" ng-click="saveFile()" data-toggle="tooltip" title="Save to file">
+      </button>
+    </div>
+    <div></div>
+    <div class="ml-1 input-group input-group-sm col-xs-10 ">
+
+      <span class="input-group-addon  form-control-label">Filter Path</span>
+      <input type="text" class="form-control " ng-model="jsonFilter" ng-keyup="jsonFilterKeyPress($event, jsonFilter)" />
+
+      <div class="input-group-btn">
+        <button class="btn btn-secondary btn-sm" type="button" ng-click="filterChanged(jsonFilter)">Apply</button>  
+      </div>
+      <div class="input-group-btn">
+        <button class="btn btn-secondary btn-sm fa fa-trash-o" type="button" ng-click="clearFilter()"></button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="row" class="" *ngIf="false">
+    <div class="input-group input-group-sm col-12 pt-1">
+
+
+      <div class="input-group-btn">
+        <button class="btn btn-sm" [class]="{'btn-secondary' : !search.isRegex, 'btn-primary': search.isRegex}" type="button" ng-click="toggleSearchRegex()"
+          data-toggle="tooltip" title="Search string is a regular expression">.*</button>
+      </div>
+
+      <input id="search-string-entry" type="text" class="form-control form-control-sm" ng-model="search.pattern" ng-keyup="onSearchKeyUp($event)"
+      />
+
+      <div class="input-group-btn">
+        <button class="btn btn-secondary btn-sm fa fa-search" type="button" ng-click="onSearch()">
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+
+<div class="container-fluid view">
+
+
+  <div class="col-xs-12" style="height:100%;display: flex;flex-direction: row;align-content:stretch;align-items:stretch;">
+    <app-json-tree style="flex-grow: 1; align-self:stretch;"></app-json-tree>
+
+    <!-- <json-tree json-content="data" max-nodes="200" json-filter="activeJSONFilter"
+                     on-error="onSyntaxError($event)"
+                     on-node-mouse-over="onNodeMouseOver($event)"
+                     on-node-click="onNodeMouseClick($event)"
+                     on-created="onTreeCreated($event)"
+                     selected-path="getSelectedPath()"></json-tree> -->
+  </div>
+</div>
+
+<div class="container-flud">
+  <nav class="navbar bg-inverse fixed-bottom">
+
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon input-group-sm">Selected Node</span>
+      <input type="text" class="form-control" value="" readonly/>
+      <div class="input-group-btn">
+        <button class="btn btn-secondary btn-sm fa fa-copy" type="button" ng-class="{active : !selectedNode}" ng-click="copySelectedNode()"
+          title="Copy selected node"></button>
+      </div>
+      <div class="input-group-btn">
+        <button class="btn btn-secondary btn-sm fa fa-map-pin" type="button" ng-class="{active : !selectedNode}" ng-click="copySelectedPath()"
+          title="Copy selected path"></button>
+      </div>
+      <div class="input-group-btn">
+        <button class="btn btn-secondary btn-sm fa fa-trash-o" type="button" ng-class="{active : !selectedNode}" ng-click="deleteSelectedNode()"
+          title="Delete selected node"></button>
+      </div>
+    </div>
+
+  </nav>
+</div>
