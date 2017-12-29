@@ -261,12 +261,14 @@ export class Parser {
         let state: State;
 
         this.reset();
-        state = this.pushState(State.Start);
+        state = this.pushState(State.Start);       
 
         while (index < src.length) {
-            char = src.charAt(index);
+            
+            char = src.charCodeAt(index);
             switch (char) {
-                case '{':
+                // case '{':
+                case 123:
                     if (state === State.Start || state === State.Value) {
                         if (this.debug) {
                             this.logDebug(src, 'object start', index, 1);
@@ -283,7 +285,8 @@ export class Parser {
                                     ` An object can only be opened at the start of a json string or as a value`);
                     }
                     break;
-                case '}':
+                // case '}':
+                case 125:
                     // if the current state is key pop and see if we are in an object
                     if (state === State.Key) {
                         state = this.popState();
@@ -308,7 +311,8 @@ export class Parser {
                             ` There are no open objects to close.`);
                     }
                     break;
-                case '[':
+                // case '[':
+                case 91:
                     if (state === State.Start || state === State.Value) {
                         if (this.debug) {
                             this.logDebug(src, 'array start', index, 1)
@@ -325,7 +329,8 @@ export class Parser {
                             `  An array can only be opened at the start of a json string or as a value`);
                     }
                     break;
-                case ']':
+                // case ']':
+                case 93:
                     // if the current state is key pop and see if we are in an array
                     if (state === State.Value) {
                         state = this.popState();
@@ -350,7 +355,8 @@ export class Parser {
                             ` There are no open arrays to close.`);
                     }
                     break;
-                case '"':
+                //case '"': 
+                case 34: 
                     if (state === State.Key) {
                         const end = this.findStringEnd(src, index);
                         if (this.debug) {
@@ -377,16 +383,20 @@ export class Parser {
                             ` Cannot start a string here.`);
                     }
                     break;
-                case 'n':
+                // case 'n':
+                case 110:
                     [state, index] = this.parseFixedValue(state, src, index, DataType.Null, 'null', null);
                     break;
-                case 't':
+                // case 't':
+                case 116:
                     [ state, index ] = this.parseFixedValue(state, src, index, DataType.Boolean, 'true', true);
                     break;
-                case 'f':
+                // case 'f':
+                case 102:
                     [state, index] = this.parseFixedValue(state, src, index, DataType.Boolean, 'false', false);
                     break;
-                case ':':
+                // case ':':
+                case 58:
                     if (state === State.Key) {
                         this.popState();
                         state = this.pushState(State.Value);
@@ -395,7 +405,8 @@ export class Parser {
                             ` A : can only be placed after a key name in an object`);
                     }
                     break;
-                case ',':
+                // case ',':
+                case 44:
                     if (state === State.Array) {
                         state = this.pushState(State.Value);
                     } else if (state === State.Object) {
@@ -406,7 +417,8 @@ export class Parser {
                     }
                     break;
                 default:
-                    if ('-0123456789'.indexOf(char) !== -1) {
+                    // if ('-0123456789'.indexOf(char) !== -1) {
+                    if ((char === 45) || (char >= 48 && char <= 57)) {
                         if (state === State.Value) {
                             let end = this.findNumberEnd(src, index);
                             if (end !== -1) {
@@ -424,7 +436,8 @@ export class Parser {
                                 throw new Error(`Invalid numberic value found at index ${index}.`);
                             }
                         }
-                    } else if (char === '\n' || char === '\r' || char === '\t' || char === ' ') {
+                    // } else if (char === '\n' || char === '\r' || char === '\t' || char === ' ') {
+                    } else if (char === 13 || char === 10 || char === 9 || char === 32 ) {
                         // nothing to do just skipping whitespace
                     } else {
                         throw new Error(`Unexpected character "${char}" found at index ${index}. ` +
@@ -528,7 +541,7 @@ export class Parser {
         const newKey = new JsonKeyNode(this.nextId++, sourceData, start, end, key);
         this.collectNode(newKey);
         if (!this.active || this.active.type !== JsonNodeType.Object) {
-            console.log("invalid type for active");
+            throw new Error(`Invalid state found a key outside and object`);
         }
         this.active.data[key] = newKey;
         this.pushActive(newKey);

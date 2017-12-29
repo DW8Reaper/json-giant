@@ -1,14 +1,23 @@
-@import '~angular-tree-component/dist/angular-tree-component.css';
 
-.test{
-  background-color: red;
+div.view-content {
+  margin: 0;
+  padding: 0;
+  overflow: auto;
 }
 
-div.page-content {
-  height: 100%;
-  width: 100%;
-}
 div.view {
-  overflow: scroll;
-  height: 100%;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+}
+
+
+.search-box {
+  min-width: 100pt;
+  max-width: 2000pt;
+  //width: 90%;
+}
+
+.test {
+  border:2px solid red;
 }

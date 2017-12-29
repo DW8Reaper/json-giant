@@ -19,4 +19,4 @@ sleep 9s
 
 electron . debug-mode
 
-ctrl_c()
+ctrl_c

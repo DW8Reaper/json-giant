@@ -7,6 +7,7 @@ import { JsonTreeComponent } from './json-tree/json-tree.component';
 
 import { TreeModule } from 'angular-tree-component';
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -17,6 +18,6 @@ import { TreeModule } from 'angular-tree-component';
     TreeModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule { }

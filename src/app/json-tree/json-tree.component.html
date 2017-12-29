@@ -15,12 +15,13 @@
             <ng-template #treeNodeTemplate let-node let-index="index">
                 <span class="node-intro" [class.non-toggler-spacing]='node.isLeaf'>{{ getNodeIntro(node.data) }}</span>
                 <span>{{ getNodeValue(node.data) }}</span>
+                <span *ngIf="!node.isLeaf && !node.isExpanded" class="end-tag">{{ getNodeOutro(node.data) }}</span>
               </ng-template>            
         </tree-node-wrapper>
         
         <tree-node-children [node]="node" [templates]="templates">
         </tree-node-children>
-        <span *ngIf="!node.isLeaf" class="end-tag">{{ getNodeOutro(node.data) }}</span>
+        <span *ngIf="!node.isLeaf && node.isExpanded" class="end-tag">{{ getNodeOutro(node.data) }}</span>
         <tree-node-drop-slot [dropIndex]="node.index + 1" [node]="node.parent">
         </tree-node-drop-slot>
       </div>

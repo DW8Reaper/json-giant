@@ -4,7 +4,7 @@
 
 const _ = require('lodash');
 
-const {app, BrowserWindow, Menu, globalShortcut} = require('electron');
+const {app, BrowserWindow, Menu, globalShortcut } = require('electron');
 const path = require('path');
 const url = require('url');
 
@@ -166,12 +166,15 @@ function appLoaded() {
 }
 
 function createWindow() {
+
     let newWindow = new BrowserWindow({
         width: 1060,
         height: 850,
-        // webPreferences: {
-        //
-        // }
+        darkTheme: true,
+         webPreferences: {
+            nodeIntegration: true
+
+        }
     });
 
     newWindow.loadURL(url.format({

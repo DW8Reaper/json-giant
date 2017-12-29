@@ -1,16 +1,24 @@
 import { map } from 'lodash';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, OnChanges } from '@angular/core';
 import { Observable } from 'rxjs';
 import { TreeNode, TreeComponent } from 'angular-tree-component';
 import { Parser, JsonNode, JsonNodeType, JsonKeyNode, JsonArrayNode } from '../json-parser/parser';
+import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
+import { has } from 'lodash';
+
 // import * as fs from 'fs';
 
+export class JsonTreeData {
+  public root: JsonNode;
+}
 @Component({
   selector: 'app-json-tree',
   templateUrl: './json-tree.component.html',
   styleUrls: ['./json-tree.component.scss']
 })
-export class JsonTreeComponent implements OnInit {
+export class JsonTreeComponent implements OnInit, OnChanges {
+  @Input() 
+  json: JsonTreeData = null;
 
   @ViewChild(TreeComponent)
   private tree: TreeComponent;
@@ -23,13 +31,19 @@ export class JsonTreeComponent implements OnInit {
     const parser = new Parser(null, false, false);
     // const fs = require('fs');
     // let root = parser.parse(fs.readFileSync('/Users/dewildt/Insync/Desktop/test.json').toString('UTF-8'));
-    const root = parser.parse(
-      `{"a": 100, "b": {"c":100, "d":{"c":[1,2,3], "e":"ddddd"}}, "m&m<m>m}": {"iggy": "this is a long ass string\\""}}`);
-    this.nodes.push(root);
+
 
     
     }
-
+  public ngOnChanges(changes: SimpleChanges){
+    if (has(changes, 'json')) {
+      this.nodes = new Array<JsonNode>();
+      if (this.json && this.json.root) {
+        this.nodes.push(this.json.root);
+      }
+      this.tree.treeModel.update();
+    }
+  }
   public options = {
     hasChildrenField: 'hasChildren',
     // isExpandedField: 'expanded',
