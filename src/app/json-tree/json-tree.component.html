@@ -1,5 +1,5 @@
 
-  <tree-root #tree [nodes]="nodes" [options]="options">
+  <tree-root #tree [nodes]="nodes" [options]="options" (activate)='onNodeActive($event)' (deactivate)='onNodeDeactive($event)'>
 
     <ng-template #treeNodeFullTemplate let-node let-index="index" let-templates="templates">
       <div [class]="node.getClass()" [class.tree-node]="true" [class.tree-node-focused]="node.isFocused && node.isLeaf" [class.tree-node-active]="node.isActive"

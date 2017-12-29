@@ -1,10 +1,11 @@
 import { map } from 'lodash';
-import { Component, OnInit, ViewChild, Input, OnChanges } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, OnChanges, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs';
 import { TreeNode, TreeComponent } from 'angular-tree-component';
 import { Parser, JsonNode, JsonNodeType, JsonKeyNode, JsonArrayNode } from '../json-parser/parser';
 import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
 import { has } from 'lodash';
+
 
 // import * as fs from 'fs';
 
@@ -17,6 +18,9 @@ export class JsonTreeData {
   styleUrls: ['./json-tree.component.scss']
 })
 export class JsonTreeComponent implements OnInit, OnChanges {
+  @Output('active-node')
+  activeNode = new EventEmitter;
+
   @Input() 
   json: JsonTreeData = null;
 
@@ -106,6 +110,12 @@ export class JsonTreeComponent implements OnInit, OnChanges {
     }
   }
 
+  onNodeActive($event) {
+    this.activeNode.emit($event.node.data);
+  } 
+  onNodeDeactive($event) {
+    this.activeNode.emit(null);
+  }
 
   ngOnInit() {
   }

@@ -5,7 +5,7 @@
     "sourceMap": true,
     "inlineSourceMap": false,
     "declaration": false,
-    "module": "es2015",    // using es2015 so that webpack doesn't replace electrons node version of require
+    "module": "commonjs",   
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

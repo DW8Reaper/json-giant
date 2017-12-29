@@ -11,7 +11,7 @@ fdescribe('Parser', () => {
 
     });
 
-    fit('should parse an object', () => {
+    it('should parse an object', () => {
         const rootNode = parser.parse(`{"key1": "b", "key2":"c", "key3":null,"key4":true,"key5":false,"key6":-100.58,"key7":{"key8": null}}`);
         
         const nodeList = parser.allNodes;
@@ -61,7 +61,7 @@ fdescribe('Parser', () => {
         // expectNode(nodeList[14], JsonNodeType.Object, nodeList[13], `{"key8", null}`);
     });
 
-    fit('Should parse and array with values', () => {
+    it('Should parse and array with values', () => {
         const rootNode = parser.parse(`["a" ,null, true,false,-100.58,{"key1" :true}, [], [1], 1]`);
         const nodeList = parser.allNodes;
 
@@ -91,7 +91,7 @@ fdescribe('Parser', () => {
         expectNode(nodeList[11], JsonNodeType.Value, nodeList[10], `1`, 1);
     });
 
-    fit('Should parse and object ignoring whitespace', () => {
+    it('Should parse and object ignoring whitespace', () => {
         const rootNode = parser.parse(`    { "key1"   : "b"   , "key2"    :   "c"  ,  `
                   + `"key3"  :  null  ,  "key4"  :  true  ,  "key5"  :  false  ,  "key6"   :   -100.58  }    `);
         const nodeList = parser.allNodes;
@@ -130,7 +130,7 @@ fdescribe('Parser', () => {
         expectNode(nodeList[12], JsonNodeType.Value, nodeList[11], `-100.58`, -100.58);
     });
 
-    fit('Should find the end of a string considering escaped "', () => {
+    it('Should find the end of a string considering escaped "', () => {
         // test use a / instead of \ so the test strings a readable. These are replaced by \ for test execution
         expect(parser.findStringEnd(makeJson(` "            "`), 1)).toBe(14);
         expect(parser.findStringEnd(makeJson(` "   /"/"     "`), 1)).toBe(14);
@@ -139,13 +139,13 @@ fdescribe('Parser', () => {
         expect(parser.findStringEnd(makeJson(` "  ///"/"/"/""`), 1)).toBe(14);
     });
 
-    fit('Should return -1 if the string is never closed', () => {
+    it('Should return -1 if the string is never closed', () => {
         // test use a / instead of \ so the test strings a readable. These are replaced by \ for test execution
         expect(parser.findStringEnd(makeJson(` "            `), 1)).toBe(-1);
         expect(parser.findStringEnd(makeJson(` "   ///"    /"`), 1)).toBe(-1);
     });
 
-    fit('Should parse a number with decimals', () => {
+    it('Should parse a number with decimals', () => {
         expect(parser.findNumberEnd(makeJson(`  12.3g`), 2)).toBe(-1);  // invalid char after number causes a mismatch
 
         expect(parser.findNumberEnd(makeJson(`  12.3`), 2)).toBe(5);    // match at the end of a string
@@ -166,6 +166,23 @@ fdescribe('Parser', () => {
         expect(parser.findNumberEnd(makeJson(`  123 2   `), 2)).toBe(4);
         expect(parser.findNumberEnd(makeJson(`  123  2  `), 2)).toBe(4);
     });
+
+
+    it('should convert a JsonNode to a JS representation', () => {
+        const root = parser.parse(`{"a": "100", "b": 200, "c" : [{"d": 10}, 10, null, false, true]}`);
+        const jsObj = root.toJS();
+        expect(jsObj).toEqual({
+            a: '100',
+            b: 200,
+            c: [
+                {d: 10},
+                10,
+                null,
+                false,
+                true
+            ]
+        });
+    }); 
 
     /**
      * Validate that a node matches all the expectations of the test

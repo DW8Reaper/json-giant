@@ -1,4 +1,5 @@
-import { isNumber, isUndefined } from 'lodash';
+import { isString, isNumber, isUndefined, forOwn } from 'lodash';
+import { Buffer } from 'buffer';
 
 /**
  * Enumeration of the valid states the parser can be in
@@ -55,6 +56,11 @@ export abstract class JsonNode {
         this.previousNode = null;
     }
 
+    public abstract toJS(): any;
+    public abstract toJSString(): string {
+        return JSON.stringify(this.toJS());
+    }
+
     public abstract get hasChildren();
 
     public get name(): string {
@@ -86,6 +92,14 @@ export class JsonObjectNode extends JsonNode {
         this.data = {};
     }
 
+    public toJS(): any {
+        let result = {};
+        forOwn(this.data, (value: JsonNode, key: string) => {
+            result[key] = value.toJS();
+        });
+        return result;
+    }
+
     public get hasChildren() {
         return true;
     }
@@ -98,6 +112,9 @@ export class JsonArrayNode extends JsonNode {
     public constructor(id: number, sourceData: string, start: number, end: number = -1) {
         super(id, sourceData, JsonNodeType.Array, start, end);
         this.data = [];
+    }
+    public toJS(): any {
+        return this.data.map((v: JsonNode) => v.toJS() );
     }
 
     public get hasChildren() {
@@ -117,6 +134,10 @@ export class JsonKeyNode extends JsonNode {
         this.key = key;
     }
 
+    public toJS(): any {
+        return this.data.toJS();
+    }
+
     public getPath(humanReadable: boolean): string {
         if (!this.previousNode){
             return '';  // a key must alway have a parent so there can be no path to a key without a parent
@@ -134,18 +155,26 @@ export class JsonKeyNode extends JsonNode {
 }
 
 export class JsonValueNode extends JsonNode {
-    private value: any;
+    private valueSet: boolean = false;
 
     public constructor(id: number, sourceData: string, start: number, end: number = -1, value?: any) {
         super(id, sourceData, JsonNodeType.Value, start, end);
-        this.value = value;
+        if (!isUndefined(value)) {
+            this.valueSet = true;
+            this.data = value;
+        } else {
+            this.valueSet = false;
+        }
     }
 
     public getValue() {
-        if (isUndefined(this.value)) {
-            this.value = JSON.parse(this.getSourceText());
+        if (!this.valueSet) {
+            this.data = JSON.parse(this.getSourceText());
         }
-        return this.value;
+        return this.data;
+    }
+    public toJS(): any {
+        return this.getValue();
     }
 
     public get hasChildren() {
@@ -254,7 +283,7 @@ export class Parser {
         }
     }
 
-    public parse(src: string): JsonNode {
+    public parse(data: string | Uint8Array): JsonNode {
 
         let char = null;
         let index = 0;
@@ -262,10 +291,12 @@ export class Parser {
 
         this.reset();
         state = this.pushState(State.Start);       
-
-        while (index < src.length) {
-            
-            char = src.charCodeAt(index);
+        
+        const src = (data instanceof Uint8Array) ? data.toString() : data;
+        const buffer = (data instanceof Uint8Array) ? new Buffer(data) : Buffer.from(data);
+        while (index < buffer.byteLength) {
+            char = buffer.readUInt8(index);
+            //char = src.charCodeAt(index);
             switch (char) {
                 // case '{':
                 case 123:
