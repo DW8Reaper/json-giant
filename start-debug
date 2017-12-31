@@ -1,21 +1,26 @@
 #!/bin/bash
 
-base_dir=`pwd`
-pid=""
-
+# Function to kill ng-build then exit the script
 function ctrl_c {
-    echo 
-    echo
-    echo "exiting..."
+    echo "\n\nexiting...\n"
     kill ${pid}
     exit 0
 }
 
-ng build --base-href ${base_dir}/dist/  --sourcemaps -w &
+base_dir=`pwd`
+
+# remove dist and start the build in parallel
+rm -Rf "${base_dir}/dist"
+ng build --base-href "${base_dir}/dist/"  --sourcemaps -w &
 pid=$!
 trap "ctrl_c" INT
 
-sleep 9s
+# Wait for dist folder to be created by build
+while [ ! -d "${base_dir}/dist" ]; do
+    sleep .5s
+done
+sleep .5s
+echo "\n'${base_dir}/dist' found, starting electron app...\n"
 
 electron . debug-mode
 

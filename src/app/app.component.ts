@@ -40,7 +40,7 @@ export class AppComponent {
 
     if (node) {
       const clipboard = this.requireService.electron.remote.clipboard;
-      let text = clipboard.writeText(node.toJSString());
+      let text = clipboard.writeText(node.toJsString());
     }
   }
 
@@ -61,7 +61,7 @@ export class AppComponent {
         }]
     });
     if (filename && filename.length > 0) {
-        fs.writeFile(filename, JSON.stringify(this.jsonRoot.root.toJS()), {encoding: 'utf-8'}, function (err, data) {
+        fs.writeFile(filename, JSON.stringify(this.jsonRoot.root.toJs()), {encoding: 'utf-8'}, function (err, data) {
             if (err) {
                 this.requireService.electron.remote.dialog.showErrorBox("Unabled to save file", err.message);
             }

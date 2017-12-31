@@ -56,9 +56,9 @@ export abstract class JsonNode {
         this.previousNode = null;
     }
 
-    public abstract toJS(): any;
-    public toJSString(): string {
-        return JSON.stringify(this.toJS());
+    public abstract toJs(): any;
+    public toJsString(): string {
+        return JSON.stringify(this.toJs());
     }
 
     public abstract get hasChildren();
@@ -92,10 +92,10 @@ export class JsonObjectNode extends JsonNode {
         this.data = {};
     }
 
-    public toJS(): any {
+    public toJs(): any {
         let result = {};
         forOwn(this.data, (value: JsonNode, key: string) => {
-            result[key] = value.toJS();
+            result[key] = value.toJs();
         });
         return result;
     }
@@ -113,8 +113,8 @@ export class JsonArrayNode extends JsonNode {
         super(id, sourceData, JsonNodeType.Array, start, end);
         this.data = [];
     }
-    public toJS(): any {
-        return this.data.map((v: JsonNode) => v.toJS() );
+    public toJs(): any {
+        return this.data.map((v: JsonNode) => v.toJs() );
     }
 
     public get hasChildren() {
@@ -134,8 +134,8 @@ export class JsonKeyNode extends JsonNode {
         this.key = key;
     }
 
-    public toJS(): any {
-        return this.data.toJS();
+    public toJs(): any {
+        return this.data.toJs();
     }
 
     public getPath(humanReadable: boolean): string {
@@ -173,7 +173,7 @@ export class JsonValueNode extends JsonNode {
         }
         return this.data;
     }
-    public toJS(): any {
+    public toJs(): any {
         return this.getValue();
     }
 

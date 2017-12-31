@@ -170,7 +170,7 @@ fdescribe('Parser', () => {
 
     it('should convert a JsonNode to a JS representation', () => {
         const root = parser.parse(`{"a": "100", "b": 200, "c" : [{"d": 10}, 10, null, false, true]}`);
-        const jsObj = root.toJS();
+        const jsObj = root.toJs();
         expect(jsObj).toEqual({
             a: '100',
             b: 200,
