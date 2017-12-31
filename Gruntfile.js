@@ -3,8 +3,9 @@
  */
 
 let _ = require('lodash');
+let electronServer = require('electron-connect').server.create();
 
-module.exports = function (grunt) {
+module.exports = function(grunt) {
     'use strict';
 
     function getOSXPackage() {
@@ -45,7 +46,7 @@ module.exports = function (grunt) {
                     "<%=dmgPath%>"
                 ]
             },
-            "karma":{
+            "karma": {
                 cmd: 'karma',
                 args: [
                     'start',
@@ -125,7 +126,7 @@ module.exports = function (grunt) {
             }
         },
         rename: {
-            "osx-license" : {
+            "osx-license": {
 
             }
         },
@@ -142,15 +143,13 @@ module.exports = function (grunt) {
                         rename: function(dest, src) {
                             return dest + src + '-ELECTRON';
                         }
-                    },
-                    {
+                    }, {
                         expand: true,
                         src: ['app/used_libraries.json'],
                         dest: (getOSXPackage() + '/'),
                         filter: 'isFile',
                         flatten: true
-                    },
-                    {
+                    }, {
                         expand: true,
                         src: ['app/'],
                         dest: (getOSXPackage() + '/'),
@@ -160,6 +159,22 @@ module.exports = function (grunt) {
                 ],
             },
         },
+        watch: {
+            electronMain: {
+                files: ['app/main.js', 'app/index.html'],
+                tasks: ['electron-restart'],
+                options: {
+                    spawn: false
+                }
+            },
+            electronReload: {
+                files: ['app/**/*.js', 'app/**/*.css', 'app/**/*.html', 'app/**/*.json'],
+                tasks: ['electron-reload'],
+                options: {
+                    spawn: false
+                }
+            }
+        }
     });
 
     grunt.loadNpmTasks('grunt-run');
@@ -168,31 +183,35 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-open');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('app-run', 'Run JSON Giant electron app', ['run:electron']);
     grunt.registerTask('app-debug', 'Run JSON Giant electron app', ['run:electron-debug']);
 
-    grunt.registerTask('app-update-used-libs', 'Update list of used libraries with license information', function () {
+    grunt.registerTask('app-update-used-libs', 'Update list of used libraries with license information', function() {
         let done = this.async();
 
         var nlf = require('nlf');
 
-        nlf.find({production: true, directory: './'}, function (err, licenses) {
+        nlf.find({
+            production: true,
+            directory: './'
+        }, function(err, licenses) {
             if (err) {
                 grunt.log.error(err);
             }
 
             let used_libraries = [];
 
-            _.forEach(licenses, function (license) {
+            _.forEach(licenses, function(license) {
                 let names = [];
-                _.forEach(_.get(license, 'licenseSources.package.sources'), function (src) {
+                _.forEach(_.get(license, 'licenseSources.package.sources'), function(src) {
                     if (src.license) {
                         names.push(src.license);
                     }
                 });
                 let text = [];
-                _.forEach(_.get(license, 'licenseSources.license.sources'), function (src) {
+                _.forEach(_.get(license, 'licenseSources.license.sources'), function(src) {
                     if (src.text) {
                         text.push(src.text);
                     }
@@ -219,7 +238,9 @@ module.exports = function (grunt) {
 
     });
 
-    grunt.registerTask('app-build', 'Build JSON Giant', function () {
+    grunt.registerTask('default', ['serve']);
+
+    grunt.registerTask('app-build', 'Build JSON Giant', function() {
         //grunt.config.set('electron.osx.options.version', grunt.config.get('pkg.app-version'));
         grunt.task.run('clean:release');
 
@@ -250,7 +271,7 @@ module.exports = function (grunt) {
 
     // task to start an HTTP server to serve all file for unit tests so that we don't have to redefine all of them
     // in karma config
-    grunt.registerTask('test-http-server', function () {
+    grunt.registerTask('test-http-server', function() {
         var liveServer = require("live-server");
 
         var params = {
@@ -266,7 +287,17 @@ module.exports = function (grunt) {
         liveServer.start(params);
     });
 
+    grunt.registerTask('serve', function() {
+        electronServer.start();
+        grunt.task.run('watch');
+    });
+
+    grunt.registerTask('electron-restart', function(){
+        electronServer.restart();
+    });
+
+    grunt.registerTask('electron-reload', function(){
+        electronServer.restart();
+    });
+
 };
-
-
-
