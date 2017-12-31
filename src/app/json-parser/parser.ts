@@ -57,7 +57,7 @@ export abstract class JsonNode {
     }
 
     public abstract toJS(): any;
-    public abstract toJSString(): string {
+    public toJSString(): string {
         return JSON.stringify(this.toJS());
     }
 
