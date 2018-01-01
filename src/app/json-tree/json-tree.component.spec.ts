@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TreeModule } from 'angular-tree-component';
 import { JsonTreeComponent } from './json-tree.component';
 
 describe('JsonTreeComponent', () => {
@@ -8,7 +8,8 @@ describe('JsonTreeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ JsonTreeComponent ]
+      declarations: [ JsonTreeComponent ],
+      imports: [TreeModule]
     })
     .compileComponents();
   }));

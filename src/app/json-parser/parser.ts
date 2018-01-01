@@ -283,17 +283,28 @@ export class Parser {
         }
     }
 
-    public parse(data: string | Uint8Array): JsonNode {
+    public parse(data: string | Uint8Array | Buffer): JsonNode {
 
         let char = null;
         let index = 0;
         let state: State;
 
         this.reset();
-        state = this.pushState(State.Start);       
+        state = this.pushState(State.Start);
         
-        const src = (data instanceof Uint8Array) ? data.toString() : data;
-        const buffer = (data instanceof Uint8Array) ? new Buffer(data) : Buffer.from(data);
+        let src: string = null;
+        let buffer: Buffer = null;
+        if (data instanceof Uint8Array) {
+            src = data.toString();
+            buffer = new Buffer(data);
+        } else if (Buffer.isBuffer(data)) {
+            src = data.toString();
+            buffer = data;
+        } else {
+            src = data;
+            buffer = Buffer.from(data);
+        }
+
         while (index < buffer.byteLength) {
             char = buffer.readUInt8(index);
             //char = src.charCodeAt(index);

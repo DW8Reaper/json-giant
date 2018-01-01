@@ -18,7 +18,7 @@ export class JsonTreeData {
   styleUrls: ['./json-tree.component.scss']
 })
 export class JsonTreeComponent implements OnInit, OnChanges {
-  @Output('active-node')
+  @Output()
   activeNode = new EventEmitter;
 
   @Input() 

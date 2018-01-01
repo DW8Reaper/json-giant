@@ -2,7 +2,7 @@ import { TestBed, inject, __core_private_testing_placeholder__ } from '@angular/
 import { has } from 'lodash';
 import { Parser, JsonNode, JsonNodeType, JsonValueNode } from './parser';
 
-fdescribe('Parser', () => {
+describe('Parser', () => {
 
     let parser: Parser;
 
