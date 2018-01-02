@@ -4,7 +4,7 @@
 
 const _ = require('lodash');
 
-const {app, BrowserWindow, Menu, globalShortcut } = require('electron');
+const { app, BrowserWindow, Menu, globalShortcut } = require('electron');
 const path = require('path');
 const url = require('url');
 
@@ -24,37 +24,51 @@ function appLoaded() {
 
     const template = [
         {
-          label: "File",
+            label: "File",
             submenu: [
                 {
-                  label: "New Window",
+                    label: "New Window",
                     accelerator: 'CmdOrCtrl+N',
-                    click : onNewWindow
+                    click: onNewWindow
+                },
+                {
+                    label: "Open",
+                    accelerator: 'CmdOrCtrl+O',
+                    click: createCommandHandler('open')
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: "Save",
+                    accelerator: 'CmdOrCtrl+S',
+                    click: createCommandHandler('save')
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    role: 'close'
                 }
-           ]
+            ]
         },
         {
             label: 'Edit',
             submenu: [
                 {
-                    role: "reload"
+                    label: "Cut",
+                    accelerator: "CmdOrCtrl+X",
+                    click: createCommandHandler('cut')
                 },
                 {
-                    role: "cut"
+                    label: "Copy",
+                    accelerator: "CmdOrCtrl+C",
+                    click: createCommandHandler('copy')
                 },
                 {
-                    role: "copy"
-                },
-                {
-                    role: "paste"
-                },
-                {
-                    role: "separator"
-                },
-                {
-                    label: "Find",
-                    accelerator: "CmdOrCtrl+F",
-                    click: onFind
+                    label: "Paste",
+                    accelerator: "CmdOrCtrl+V",
+                    click: createCommandHandler('paste')
                 }
             ]
         },
@@ -62,16 +76,14 @@ function appLoaded() {
             label: 'View',
             submenu: [
                 {
-                    label:"Show Dev Tools",
-                    role: 'toggledevtools'
-                },
-                {
-                    label: "Reload",
                     role: 'reload'
                 },
                 {
-                    label: "Force Reload",
                     role: 'forcereload'
+                },
+                {
+                    label: "Show Dev Tools",
+                    role: 'toggledevtools'
                 }
             ]
         },
@@ -80,9 +92,6 @@ function appLoaded() {
             submenu: [
                 {
                     role: 'minimize'
-                },
-                {
-                    role: 'close'
                 }
             ]
         },
@@ -91,7 +100,7 @@ function appLoaded() {
             submenu: [
                 {
                     label: 'Learn More',
-                    click () { require('electron').shell.openExternal('http://electron.atom.io') }
+                    click() { require('electron').shell.openExternal('http://electron.atom.io') }
                 }
             ]
         }
@@ -131,7 +140,7 @@ function appLoaded() {
                 }
             ]
         });
-        
+
         // Window menu.
         template[3].submenu = [
             {
@@ -161,7 +170,6 @@ function appLoaded() {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
-
     createWindow();
 }
 
@@ -171,7 +179,7 @@ function createWindow() {
         width: 1060,
         height: 850,
         darkTheme: true,
-         webPreferences: {
+        webPreferences: {
             nodeIntegration: true
 
         }
@@ -198,34 +206,30 @@ function createWindow() {
 app.on('ready', appLoaded);
 
 app.on('window-all-closed', () => {
-   if(process.platform !== 'darwin') {
-       app.quit();
-   };
+    if (process.platform !== 'darwin') {
+        app.quit();
+    };
 });
 
 app.on('activate', () => {
-   if (jsonWindows.length === 0) {
-       createWindow();
+    if (jsonWindows.length === 0) {
+        createWindow();
     }
 });
 
-function onFind() {
-    'use strict';
-    //console.log("finding");
-    let focusedWindow = BrowserWindow.getFocusedWindow();
-    //console.log("finding 1 " + focusedWindow.webContents);
-    focusedWindow.webContents.send('do-find');
-
-//    focusedWindow.webContents.findInPage("ap");
-
-
-    //console.log("finding 2");
-
-}
-
-function onNewWindow(){
+function onNewWindow() {
     "use strict";
 
     createWindow();
 
+}
+
+
+function createCommandHandler(command) {
+    return function () {
+        let focusedWindow = BrowserWindow.getFocusedWindow();
+        if (focusedWindow) {
+            focusedWindow.webContents.send(command);
+        }
+    };
 }

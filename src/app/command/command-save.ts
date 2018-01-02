@@ -7,6 +7,7 @@ export class CommandSave extends CommandBase {
     const fs = state.requireService.require('fs');
 
     let filename = state.requireService.electron.remote.dialog.showSaveDialog({
+      title: 'Save As',
       filters: [{
         name: "JSON Files",
         extensions: ["json"]

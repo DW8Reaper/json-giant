@@ -10,14 +10,7 @@ import { CommandSave } from './command/command-save';
 import { CommandCopy } from './command/command-copy';
 import { CommandPaste } from './command/command-paste';
 import { CommandCopyPath } from './command/command-copy-path';
-
-export enum CommandType {
-  Open = 'open',
-  Save = 'save',
-  Copy = 'copy',
-  Paste = 'paste',
-  CopyActivePath = 'copyPath',
-}
+import { CommandType } from './command/command-type.enum';
 
 class CommandRef {
   constructor(public commandType: CommandType, public command: CommandBase) {}
@@ -49,11 +42,21 @@ export class AppComponent {
 
     // Create available commands list
     this.commands = new Array<CommandRef>();
-    this.commands.push(new CommandRef(CommandType.Open, new CommandOpen()));
-    this.commands.push(new CommandRef(CommandType.Save, new CommandSave()));
-    this.commands.push(new CommandRef(CommandType.Copy, new CommandCopy()));
-    this.commands.push(new CommandRef(CommandType.Paste, new CommandPaste()));
-    this.commands.push(new CommandRef(CommandType.CopyActivePath, new CommandCopyPath()));
+    this.registerCommand(CommandType.Open, new CommandOpen());
+    this.registerCommand(CommandType.Save, new CommandSave());
+    this.registerCommand(CommandType.Copy, new CommandCopy());
+    this.registerCommand(CommandType.Paste, new CommandPaste());
+    this.registerCommand(CommandType.CopyActivePath, new CommandCopyPath());      
+
+  }
+  private registerCommand(type: CommandType, command: CommandBase) {
+    // listen for this command on the main process
+    this.state.requireService.electron.ipcRenderer.on(type, function() {
+      command.execute(this.state);
+    }.bind(this));
+
+    // add local handler
+    this.commands.push(new CommandRef(type, command));
   }
 
   public sendCommand(type: CommandType) {
