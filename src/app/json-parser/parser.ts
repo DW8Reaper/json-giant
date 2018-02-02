@@ -1,15 +1,32 @@
 import { isString, isNumber, isUndefined, forOwn } from 'lodash';
 import { Buffer } from 'buffer';
+import { forEach } from 'lodash';
+import { transition } from '@angular/core';
+
+const ENCODING = 'utf-8';
 
 /**
  * Enumeration of the valid states the parser can be in
  */
 enum State {
-    Start = 'start',
-    Object = 'object',
-    Array = 'array',
-    Value = 'value',
-    Key = 'key'
+    Start = '*-start',
+    End = '*-end',
+    ObjectStart = '{-objectStart',
+    ObjectEnd = '}-objectEnd',
+    ArrayStart = '[-arrayStart',
+    ArrayEnd = ']-arrayEnd',
+    ValueStart = 'V-valueStart',
+    ValueEnd = '*-valueEnd',
+    ObjectValueStart = '*-objValueStart',
+    ObjectValueEnd = '*-objValueEnd',
+    ArrayFirstValueStart = '*-arrayFirstValueStart',
+    ArrayValueStart = '*-arrayValueStart',
+    ArrayValueEnd = '*-arrayValueEnd',
+    KeyStart = '"-keyStart',
+    KeyEnd = '*-keyEnd',
+    Colon = ':-colon',
+    ObjectComma = ',-objectComma',
+    ArrayComma = ',-arrayComma'
 }
 
 /**
@@ -45,11 +62,11 @@ export abstract class JsonNode {
     public data: any;
     public userData: any;
     public expanded: boolean = false;
-    public readonly sourceData: string;
+    public readonly sourceBuffer: Buffer;
 
-    public constructor(id: number, sourceData: string, type: JsonNodeType, start: number, end: number = -1) {
+    public constructor(id: number, sourceBuffer: Buffer, type: JsonNodeType, start: number, end: number = -1) {
         this.id = id;
-        this.sourceData = sourceData;
+        this.sourceBuffer = sourceBuffer;
         this.type = type;
         this.start = start;
         this.end = end;
@@ -68,7 +85,7 @@ export abstract class JsonNode {
     }
 
     public getSourceText(): string {
-        return this.sourceData.substring(this.start, this.end + 1);
+        return this.sourceBuffer.toString(ENCODING, this.start, this.end + 1);
     }
 
     public getPath(humanReadable: boolean = false): string {
@@ -87,8 +104,8 @@ export abstract class JsonNode {
 
 
 export class JsonObjectNode extends JsonNode {
-    public constructor(id: number, sourceData: string, start: number, end: number = -1) {
-        super(id, sourceData, JsonNodeType.Object, start, end);
+    public constructor(id: number, sourceBuffer: Buffer, start: number, end: number = -1) {
+        super(id, sourceBuffer, JsonNodeType.Object, start, end);
         this.data = {};
     }
 
@@ -106,31 +123,31 @@ export class JsonObjectNode extends JsonNode {
     public get name(): string {
         const prefix = (this.previousNode instanceof JsonKeyNode) ? `${this.previousNode.name} : ` : '';
         return prefix + '{';
-    }    
+    }
 }
 export class JsonArrayNode extends JsonNode {
-    public constructor(id: number, sourceData: string, start: number, end: number = -1) {
-        super(id, sourceData, JsonNodeType.Array, start, end);
+    public constructor(id: number, sourceBuffer: Buffer, start: number, end: number = -1) {
+        super(id, sourceBuffer, JsonNodeType.Array, start, end);
         this.data = [];
     }
     public toJs(): any {
-        return this.data.map((v: JsonNode) => v.toJs() );
+        return this.data.map((v: JsonNode) => v.toJs());
     }
 
     public get hasChildren() {
         return true;
-    }  
+    }
     public get name(): string {
         const prefix = (this.previousNode instanceof JsonKeyNode) ? `${this.previousNode.key} : ` : '';
         return prefix + '[';
-    }    
+    }
 }
 
 export class JsonKeyNode extends JsonNode {
     public readonly key: string;
-    
-    public constructor(id: number, sourceData: string, start: number, end: number = -1, key: string) {
-        super(id, sourceData, JsonNodeType.Key, start, end);
+
+    public constructor(id: number, sourceBuffer: Buffer, start: number, end: number = -1, key: string) {
+        super(id, sourceBuffer, JsonNodeType.Key, start, end);
         this.key = key;
     }
 
@@ -139,26 +156,26 @@ export class JsonKeyNode extends JsonNode {
     }
 
     public getPath(humanReadable: boolean): string {
-        if (!this.previousNode){
+        if (!this.previousNode) {
             return '';  // a key must alway have a parent so there can be no path to a key without a parent
         } else if (humanReadable && /^\w+[\d\w_]*$/.test(this.key)) {
             return this.previousNode.getPath(humanReadable) + '.' + this.key;
         } else {
             return this.previousNode.getPath(humanReadable) + "['" + this.key + "']";
-        }        
+        }
     }
 
     public get hasChildren() {
         return false;
-    }    
-    
+    }
+
 }
 
 export class JsonValueNode extends JsonNode {
     private valueSet: boolean = false;
 
-    public constructor(id: number, sourceData: string, start: number, end: number = -1, value?: any) {
-        super(id, sourceData, JsonNodeType.Value, start, end);
+    public constructor(id: number, sourceBuffer: Buffer, start: number, end: number = -1, value?: any) {
+        super(id, sourceBuffer, JsonNodeType.Value, start, end);
         if (!isUndefined(value)) {
             this.valueSet = true;
             this.data = value;
@@ -179,7 +196,7 @@ export class JsonValueNode extends JsonNode {
 
     public get hasChildren() {
         return false;
-    }    
+    }
 
     public get name(): string {
         if (this.previousNode instanceof JsonKeyNode) {
@@ -187,7 +204,7 @@ export class JsonValueNode extends JsonNode {
         } else {
             return this.getSourceText();
         }
-    }      
+    }
 }
 
 /**
@@ -202,13 +219,128 @@ export interface ParserEvents {
     onCloseArray(end: number);
 }
 
+const CODE_STRING_DELIMITER = 34;  // 34 = " 
+const CODE_BACKSLASH = 92; // 92 = \
+
+class StateTransition {
+    public static readonly CODE_NO_OP = 0;
+    public static readonly CODE_READ_VALUE = -1;
+    public static readonly VALUE_INTRO_CODES = []
+
+    public readonly code: number;
+    public readonly state: State;
+    public readonly next: Array<State>;
+    public readonly nextTransitions: Array<StateTransition> = new Array<StateTransition>();
+    public readonly nextCodedTransitions: Array<StateTransition> = new Array<StateTransition>();
+    public readonly nextNoOpTransitions: Array<StateTransition> = new Array<StateTransition>();
+    public pop: StateTransition;
+    public readonly gotoNext: boolean;
+    public readonly popOnCompletion: number;
+    public readonly canEnd: boolean;
+
+    private popTo: State;
+
+    public constructor(state: State, next: Array<State>, gotoNext: boolean, popOnCompletion: number, popTo?: State) {
+        this.state = state;
+        this.popOnCompletion = popOnCompletion;
+        if (this.state[0] == '*') {
+            this.code = StateTransition.CODE_NO_OP;
+        } else if (this.state[0] == 'V') {
+            this.code = StateTransition.CODE_READ_VALUE;
+        } else {
+            this.code = this.state.charCodeAt(0);
+        }
+        this.next = next;
+        this.gotoNext = gotoNext;
+
+        if (this.next.indexOf(State.End) >= 0) {
+            this.canEnd = true;
+        } else {
+            this.canEnd = false;
+        }
+        
+        this.popTo = popTo;
+
+        if (this.gotoNext && this.next.length !== 1) {
+            throw new Error('Invalid state configuration. For states that automatically go to the next state there must be exactly 1 next state to go to');
+        }        
+    }
+
+    public static isNumberIntro(charCode: number) {
+        return ((charCode === 45) || (charCode >= 48 && charCode <= 57));  // any of -0123456789
+    }
+
+    public static isStringIntro(charCode: number) {
+        return (charCode === CODE_STRING_DELIMITER);
+    }
+
+    public static isNullIntro(charCode: number) {
+        return (charCode === 110);  // 110 = n
+    }
+
+    public static isTrueIntro(charCode: number) {
+        return (charCode === 116);  // 116 = t
+    }
+
+    public static isFalseIntro(charCode: number) {
+        return (charCode === 102);  // 102 = f
+    }
+
+    public isCodedTransition(): boolean {
+        return (this.code !== StateTransition.CODE_NO_OP);
+    }
+
+    public isMatch(charCode: number): boolean {
+        if (this.code > 0) {
+            return this.code === charCode;
+        } else if (this.code === StateTransition.CODE_READ_VALUE) {
+            return StateTransition.isStringIntro(charCode) ||
+                StateTransition.isNumberIntro(charCode) ||
+                StateTransition.isTrueIntro(charCode) ||
+                StateTransition.isFalseIntro(charCode) ||
+                StateTransition.isNullIntro(charCode);
+        }
+        return false;
+    }
+
+    public stateName() {
+        return this.state.substr(2);
+    }
+
+    public fillTransitions(transitions: any) {
+        if (this.popTo) {
+            if (transitions[this.popTo]) {
+                this.pop = transitions[this.popTo];
+            } else {
+                throw new Error(`Unknown transition "${this.popTo}" specified as pop transition for state ${this.state}.`);
+            }
+        }
+
+        for (let next of this.next) {
+            if (transitions[next]) {
+                this.nextTransitions.push(transitions[next]);
+                if (transitions[next].isCodedTransition()) {
+                    this.nextCodedTransitions.push(transitions[next]);
+                } else {
+                    this.nextNoOpTransitions.push(transitions[next]);
+                }
+            } else {
+                throw new Error(`Unknown transition "${next}" specified for state ${this.state}.`);
+            }
+        }
+
+    }
+}
 /**
  * Class to implement a Json parser that provides additional details about each node parse like the location in the original file
  * and the JSON path to access the node
  */
 export class Parser {
 
+    private DEBUG_CONSOLE_MESSAGES: boolean = false;
     private static numberMatcher = RegExp(/^(?:-?(?:0\.\d+|[1-9]\d*(?:\.\d+)?)(?:e[\-+]{0,1}\d+){0,1})(?=,|\}|\]|\s|$)/);
+    private static stateTransitions: any = null;
+    private static codedTransitions: Array<StateTransition> = [];
 
     public allNodes: Array<JsonNode>;
 
@@ -225,6 +357,46 @@ export class Parser {
         this.eventCallback = eventCallback;
         this.debug = debug;
         this.collectNodes = collectNodes;
+
+        if (!Parser.stateTransitions) {
+            Parser.stateTransitions = {};
+
+            Parser.addTransition(State.Start, [State.ArrayStart, State.ObjectStart, State.ValueStart], false, 0, State.End);
+            Parser.addTransition(State.End, [], false, 0);
+
+            // Value states
+            Parser.addTransition(State.ValueStart, [State.ValueEnd], false, 0);
+            Parser.addTransition(State.ValueEnd, [], false, 2);
+
+            // Object states
+            Parser.addTransition(State.ObjectStart, [State.ObjectEnd, State.KeyStart], false, 0);
+            Parser.addTransition(State.KeyStart, [State.KeyEnd], false, 0);
+            Parser.addTransition(State.KeyEnd, [State.Colon], false, 2);
+            Parser.addTransition(State.Colon,  [State.ValueStart, State.ObjectStart, State.ArrayStart], false, 0, State.ObjectValueEnd);
+            Parser.addTransition(State.ObjectValueEnd, [State.ObjectEnd, State.ObjectComma], false, 1);
+            Parser.addTransition(State.ObjectComma, [State.KeyStart], false, 1);
+            Parser.addTransition(State.ObjectEnd, [], false, 2);
+
+            // Array states
+            Parser.addTransition(State.ArrayStart, [State.ArrayEnd, State.ArrayValueStart], false, 1);
+            Parser.addTransition(State.ArrayValueStart, [State.ValueStart, State.ObjectStart, State.ArrayStart], 
+                false, 0, State.ArrayValueEnd);
+            Parser.addTransition(State.ArrayValueEnd, [State.ArrayComma, State.ArrayEnd], false, 1);
+            Parser.addTransition(State.ArrayComma, [State.ArrayValueStart], false, 1);
+            Parser.addTransition(State.ArrayEnd, [], false, 1);
+
+            forEach(Parser.stateTransitions, transition => {
+                transition.fillTransitions(Parser.stateTransitions);
+            });
+        }
+    }
+
+    private static addTransition(state: State, next: Array<State>, autoNext: boolean, popOnCompletion: number, pop?: State) {
+        const transition = new StateTransition(state, next, autoNext, popOnCompletion, pop);
+        if (transition.code != StateTransition.CODE_NO_OP) {
+            Parser.codedTransitions.push(transition);
+        }
+        Parser.stateTransitions[state] = transition;
     }
 
     private reset() {
@@ -237,6 +409,29 @@ export class Parser {
         }
     }
 
+    private stateTransition(currentState: State, newState: State, index: number) {
+        const trans = <StateTransition>Parser.stateTransitions[currentState];
+
+        if (newState) {
+            if (trans.next.indexOf(newState) < 0) {
+                throw new Error(`Invalid state, found state "${newState}" at index ${index}. Expected one of ${trans.next}`);
+            } else {
+                return this.pushState(newState);
+            }
+        } else if (trans.pop) {
+            const resultState = this.popState();
+            if (trans.pop[resultState]) {
+                this.popState();
+                this.pushState(trans.pop[resultState]);
+                return trans.pop[resultState];
+            } else {
+                throw new Error(`Invalid state, expected ${Object.getOwnPropertyNames(resultState)} after state "${newState}" at index ${index}`);
+            }
+        } else {
+
+            return 'oops';
+        }
+    }
 
     private pushState(newState: State) {
         this.states.push(newState);
@@ -258,257 +453,209 @@ export class Parser {
         }
     }
 
-    private parseFixedValue(currentState: State, source: string, index: number, 
-                            dataType: DataType, expected: string, value: any) : [State, number] {
-        if (currentState === State.Value) {
-            if (source.substr(index, expected.length) === expected) {
-                let end = index + expected.length - 1;
-                if (this.debug) {
-                    this.logDebug(source, expected, index, end);
-                }
-                // matched so pop the current state this value completes it
-                const newState = this.popState();
-                if (this.debug) {
-                    this.logDebug(source, expected, index, end, true);
-                }
-
-                this.onValue(source, dataType, index, end, value);
-                return [newState, end];
-            } else {
-                throw new Error(`Unexpected value found, expected "${expected}" but found "${source.substr(index, expected.length)}" ` +
-                                `at index ${index} in state "${currentState}".` );
+    private readValue(buffer: Buffer, index: number, char: number): number {
+        let end = -1;
+        let dataType: DataType = null;
+        if (StateTransition.isStringIntro(char)) {
+            end = this.findStringEnd(buffer, index);
+            dataType = DataType.String;
+            if (end === -1) {
+                throw new Error(`Invalid value at index ${index}, could not interpret the value as a string!`);
             }
-        } else {
-            throw new Error(`Unexpected value, cannot have "${expected}" in state "${currentState}" at index ${index}.`);
+        } else if (StateTransition.isNumberIntro(char)) {
+            end = this.findNumberEnd(buffer, index);
+            dataType = DataType.Number;
+            if (end === -1) {
+                throw new Error(`Invalid value at index ${index}, could not interpret the value as a number!`);
+            }
+        } else if (StateTransition.isTrueIntro(char)) {
+            dataType = DataType.Boolean;
+            end = this.findLiteralEnd(buffer, index + 1, [0x72, 0x75, 0x65]);
+            if (end === -1) {
+                throw new Error(`Invalid value at index ${index}, could not interpret the value as true!`);
+            }
+        } else if (StateTransition.isFalseIntro(char)) {
+            dataType = DataType.Boolean;
+            end = this.findLiteralEnd(buffer, index + 1, [0x61, 0x6C, 0x73, 0x65]);
+            if (end === -1) {
+                throw new Error(`Invalid value at index ${index}, could not interpret the value as false!`);
+            }
+        } else if (StateTransition.isNullIntro(char)) {
+            dataType = DataType.Null;
+            end = this.findLiteralEnd(buffer, index + 1, [0x75, 0x6C, 0x6C]);
+            if (end === -1) {
+                throw new Error(`Invalid value at index ${index}, could not interpret the value as null!`);
+            }
         }
+
+        this.onValue(buffer, dataType, index, end);
+        return end;
     }
 
+    private findLiteralEnd(buffer: Buffer, index: number, literal: Array<number>) {
+        for (let i = 0; i < literal.length; i++) {
+            if (i >= buffer.byteLength) {
+                return -1;
+            } else if (buffer.readUInt8(index + i) !== literal[i]) {
+                return -1;
+            }
+        }
+        return index + literal.length - 1;
+    }
+
+    private printStack(stack: Array<StateTransition>) {
+        if (!this.DEBUG_CONSOLE_MESSAGES) {
+            return;
+        }
+        let stackString = '';
+        for (let state of stack) {
+            if (stackString) {
+                stackString += '->' + state.stateName();
+            } else {
+                stackString = state.stateName();
+            }
+        }
+        console.log(stackString);
+    }
+
+    private doIt = false;
     public parse(data: string | Uint8Array | Buffer): JsonNode {
 
         let char = null;
-        let index = 0;
-        let state: State;
+        let index = -1;
+        let state: StateTransition = Parser.stateTransitions[State.Start];
+        let stateStack: Array<StateTransition> = [state];
 
         this.reset();
-        state = this.pushState(State.Start);
-        
-        let src: string = null;
+
         let buffer: Buffer = null;
         if (data instanceof Uint8Array) {
-            src = data.toString();
             buffer = new Buffer(data);
         } else if (Buffer.isBuffer(data)) {
-            src = data.toString();
             buffer = data;
         } else {
-            src = data;
             buffer = Buffer.from(data);
         }
-
-        while (index < buffer.byteLength) {
-            char = buffer.readUInt8(index);
-            //char = src.charCodeAt(index);
-            switch (char) {
-                // case '{':
-                case 123:
-                    if (state === State.Start || state === State.Value) {
-                        if (this.debug) {
-                            this.logDebug(src, 'object start', index, 1);
-                        }
-                        this.onOpenObject(src, index);
-                        this.popState();
-                        this.pushState(State.Object);
-                        state = this.pushState(State.Key);
-                        if (this.debug) {
-                            this.logDebug(src, 'object start', index, 1);
-                        }
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                                    ` An object can only be opened at the start of a json string or as a value`);
-                    }
-                    break;
-                // case '}':
-                case 125:
-                    // if the current state is key pop and see if we are in an object
-                    if (state === State.Key) {
-                        state = this.popState();
-                        if (state !== State.Object) {
-                            state = this.pushState(State.Key);
-                            throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                                ` There are no open objects to close.`);
-                        }
-                    }
-
-                    if (state === State.Object) {
-                        if (this.debug) {
-                            this.logDebug(src, 'object end', index, 1)
-                        }
-                        this.onCloseObject(index);
-                        state = this.popState();
-                        if (this.debug) {
-                            this.logDebug(src, 'object end', index, 1, true)
-                        }
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                            ` There are no open objects to close.`);
-                    }
-                    break;
-                // case '[':
-                case 91:
-                    if (state === State.Start || state === State.Value) {
-                        if (this.debug) {
-                            this.logDebug(src, 'array start', index, 1)
-                        }
-                        this.onOpenArray(src, index);
-                        this.popState();
-                        this.pushState(State.Array);
-                        state = this.pushState(State.Value);  //Expect to get a value in this array
-                        if (this.debug) {
-                            this.logDebug(src, 'object end', index, 1, true)
-                        }
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                            `  An array can only be opened at the start of a json string or as a value`);
-                    }
-                    break;
-                // case ']':
-                case 93:
-                    // if the current state is key pop and see if we are in an array
-                    if (state === State.Value) {
-                        state = this.popState();
-                        if (state !== State.Array) {
-                            state = this.pushState(State.Value);
-                            throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                                ` There are no open arrays to close.`);
-                        }
-                    }
-
-                    if (state === State.Array) {
-                        if (this.debug) {
-                            this.logDebug(src, 'array end', index, 1);
-                        }
-                        this.onCloseArray(index);
-                        state = this.popState();
-                        if (this.debug) {
-                            this.logDebug(src, 'array end', index, 1, true);
-                        }
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                            ` There are no open arrays to close.`);
-                    }
-                    break;
-                //case '"': 
-                case 34: 
-                    if (state === State.Key) {
-                        const end = this.findStringEnd(src, index);
-                        if (this.debug) {
-                            this.logDebug(src, 'key', index, end);
-                        }
-                        this.onKey(src, JSON.parse(src.substring(index, end + 1)), index, end);
-                        if (this.debug) {
-                            this.logDebug(src, 'key', index, end, true);
-                        }
-                        index = end;
-                    } else if (state === State.Value || state === State.Start) {
-                        const end = this.findStringEnd(src, index);
-                        if (this.debug) {
-                            this.logDebug(src, 'value', index, end);
-                        }
-                        this.onValue(src, DataType.String, index, end);
-                        state = this.popState();
-                        if (this.debug) {
-                            this.logDebug(src, 'value', index, end);
-                        }
-                        index = end;
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                            ` Cannot start a string here.`);
-                    }
-                    break;
-                // case 'n':
-                case 110:
-                    [state, index] = this.parseFixedValue(state, src, index, DataType.Null, 'null', null);
-                    break;
-                // case 't':
-                case 116:
-                    [ state, index ] = this.parseFixedValue(state, src, index, DataType.Boolean, 'true', true);
-                    break;
-                // case 'f':
-                case 102:
-                    [state, index] = this.parseFixedValue(state, src, index, DataType.Boolean, 'false', false);
-                    break;
-                // case ':':
-                case 58:
-                    if (state === State.Key) {
-                        this.popState();
-                        state = this.pushState(State.Value);
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                            ` A : can only be placed after a key name in an object`);
-                    }
-                    break;
-                // case ',':
-                case 44:
-                    if (state === State.Array) {
-                        state = this.pushState(State.Value);
-                    } else if (state === State.Object) {
-                        state = this.pushState(State.Key)
-                    } else {
-                        throw new Error(`Invalid state "${state}", found "${char}" at index ${index}.` +
-                            ` A , can only be placed after a value in an array or and object`);
-                    }
-                    break;
-                default:
-                    // if ('-0123456789'.indexOf(char) !== -1) {
-                    if ((char === 45) || (char >= 48 && char <= 57)) {
-                        if (state === State.Value) {
-                            let end = this.findNumberEnd(src, index);
-                            if (end !== -1) {
-                                if (this.debug) {
-                                    this.logDebug(src, 'number', index, end);
-                                }
-                                this.onValue(src, DataType.Number, index, end);
-                                // pop value state, if we are in an array though expect another value
-                                state = this.popState();
-                                if (this.debug) {
-                                    this.logDebug(src, 'number', index, end, true);
-                                }
-                                index = end;
-                            } else {
-                                throw new Error(`Invalid numberic value found at index ${index}.`);
-                            }
-                        }
-                    // } else if (char === '\n' || char === '\r' || char === '\t' || char === ' ') {
-                    } else if (char === 13 || char === 10 || char === 9 || char === 32 ) {
-                        // nothing to do just skipping whitespace
-                    } else {
-                        throw new Error(`Unexpected character "${char}" found at index ${index}. ` +
-                                        `This character cannot appear in state "${state}"`);
-                    }
-                    break;
+        let setState: StateTransition = null;
+        this.printStack(stateStack);
+       
+        let popStack = function(checkParentPopState: boolean = true) {
+            if (state.popOnCompletion === 0) {
+                return;
             }
-            index++;
-        }
 
-        if (this.states.length) {
-            throw new Error(`Unexpected end of json data at index ${index} in state "${state}". ` +
-                  `The following states remain to be completed: [${this.states}]`);
+            for (let i = 0; i < state.popOnCompletion; i++) {
+                stateStack.pop();
+            }
+
+            state = stateStack[stateStack.length - 1];  // TODO check offset
+            if (checkParentPopState && state.pop) {
+                this.printStack(stateStack);
+                if (this.DEBUG_CONSOLE_MESSAGES) {
+                    console.log(`         -> replace top of stack ${state.state} with ${state.pop.state}`);
+                }
+                stateStack.pop();
+                state = state.pop;
+                stateStack.push(state);
+                this.printStack(stateStack);
+            } else {
+                this.printStack(stateStack);
+            }
+        }.bind(this);
+
+        const endCheckIndex = buffer.byteLength - 2;
+        while (state.state !== State.End) {
+
+            if (state.nextTransitions.length === 0 ) {
+                // state autocompletes
+                popStack();
+
+            } else {
+                index++;
+                if (index === buffer.byteLength) {
+                    throw new Error(`Unexpected end of json data at index ${index} in state "${state.state}". ` +
+                        `The following states remain to be completed: [${this.states}]`);
+                }
+
+                char = buffer.readUInt8(index);
+                if (char === 13 || char === 10 || char === 9 || char === 32) { // skip all whitespace
+                    continue;
+                }
+
+                // match current char
+                let newState = null;
+                for (let coded of state.nextCodedTransitions) {
+                    if (coded.isMatch(char)) {
+                        newState = coded;
+                        break;
+                    }
+                }
+                if (!newState && state.nextNoOpTransitions.length === 1) {
+                    // use first non-coded transition
+                    newState = state.nextNoOpTransitions[0];
+                    index--;  // reprocess this character
+                }
+
+                if (newState) {
+                    popStack();
+                    state = newState;
+                    stateStack.push(state);
+                    this.printStack(stateStack);
+
+                    if (state.code === StateTransition.CODE_READ_VALUE) {
+                        index = this.readValue(buffer, index, char);
+                    } else if (state.state === State.KeyStart) {
+                        const end = this.findStringEnd(buffer, index);
+                        if (end === -1) {
+                            throw new Error(`Invalid key at index ${index}, could not find the end of the string!`);
+                        }
+                        this.onKey(buffer, index, end);
+                        index = end;
+                    } else if (state.state === State.ObjectStart) {
+                        this.onOpenObject(buffer, index);
+                    } else if (state.state === State.ObjectEnd) {
+                        this.onCloseObject(index);
+                    } else if (state.state === State.ArrayStart) {
+                        this.onOpenArray(buffer, index);
+                    } else if (state.state === State.ArrayEnd) {
+                        this.onCloseArray(index);
+                    }
+
+                } else {
+                    throw new Error('No next :(');
+                }
+
+            }
         }
 
         return this.root;
     }
 
-    public findNumberEnd(text: string, numberStart: number) {
-        const match = Parser.numberMatcher.exec(text.substr(numberStart));
-        if (match) {
-            return numberStart + match[0].length - 1;
+    public findNumberEnd(text: Buffer, numberStart: number) {
+        let possibleEnd = numberStart+1;
+        while (possibleEnd < text.length) {
+            const char = text.readUInt8(possibleEnd);
+            if (char == 101 || // 101 = e
+                char == 69 ||  // 69 = E
+                char == 43 || // 43 = + 
+                char == 46 || // 46 = . 
+                StateTransition.isNumberIntro(char)) {
+            } else {
+                break;
+            }
+            possibleEnd++;
+        }
+
+        let numberText = text.toString(ENCODING, numberStart, possibleEnd);
+        if (Parser.numberMatcher.test(numberText)) {
+            return possibleEnd - 1;  // remove the end char that wasn't part of the number
         } else {
             return -1;
         }
     }
 
-    public findStringEnd(text: string, stringStart: number) {
-        const foundIndex = text.indexOf('"', stringStart + 1);
+    public findStringEnd(text: Buffer, stringStart: number) {
+        const foundIndex = text.indexOf(CODE_STRING_DELIMITER, stringStart + 1);
         if (foundIndex === -1) {
             return foundIndex; // invalid string could not find a closing "
         }
@@ -516,7 +663,7 @@ export class Parser {
         // Check if this string is escaped
         let i = foundIndex;
         let escapes = 0;
-        while (text.charAt(--i) === '\\') {
+        while (text.readUInt8(--i) === CODE_BACKSLASH) {
             escapes++;
         }
 
@@ -563,10 +710,10 @@ export class Parser {
         }
     }
 
-    private onValue(sourceData: string, type: DataType, start: number, end: number, parsedValue?: any) {
+    private onValue(sourceData: Buffer, type: DataType, start: number, end: number, parsedValue?: any) {
         // got some value.  v is the value. can be string, double, bool, or null.
         const newValue = new JsonValueNode(this.nextId++, sourceData, start, end, parsedValue);
-        this.collectNode(newValue);        
+        this.collectNode(newValue);
         this.setValue(newValue);
         if (this.eventCallback) {
             this.eventCallback.onValue(type, start, end);
@@ -579,7 +726,8 @@ export class Parser {
         }
     }
 
-    private onKey(sourceData: string, key: any, start: number, end: number) {
+    private onKey(sourceData: Buffer, start: number, end: number) {
+        const key = JSON.parse(sourceData.toString(ENCODING, start, end+1));
         const newKey = new JsonKeyNode(this.nextId++, sourceData, start, end, key);
         this.collectNode(newKey);
         if (!this.active || this.active.type !== JsonNodeType.Object) {
@@ -589,22 +737,21 @@ export class Parser {
         this.pushActive(newKey);
         if (this.eventCallback) {
             this.eventCallback.onKey(key, start, end);
-        }        
+        }
     }
 
-    private onOpenObject(sourceData: string, start: number) {
+    private onOpenObject(sourceData: Buffer, start: number) {
         // opened an object. key is the first key.
         // Position will be the : after the first key
-        const previous = this.active;
         const node = new JsonObjectNode(this.nextId++, sourceData, start);
         this.collectNode(node);
+        const previous = this.active;
         this.setValue(node);
-
         this.pushActive(node);
-        node.previousNode = previous;
+        node.previousNode = previous;  // restore previous that was overriden in setValue
         if (this.eventCallback) {
             this.eventCallback.onOpenObject(start);
-        }        
+        }
     }
 
     private onCloseObject(end: number) {
@@ -615,27 +762,32 @@ export class Parser {
         }
         if (this.eventCallback) {
             this.eventCallback.onCloseObject(end);
-        }             
+        }
     }
 
-    private onOpenArray(sourceData: string, start: number) {
+    private onOpenArray(sourceData: Buffer, start: number) {
         // opened an array.
         const node = new JsonArrayNode(this.nextId++, sourceData, start);
         this.collectNode(node);
+        const previous = this.active;
         this.setValue(node);
         this.pushActive(node);
+        node.previousNode = previous;  // restore previous that was overriden in setValue
         if (this.eventCallback) {
             this.eventCallback.onOpenArray(start);
-        }             
+        }
     }
 
     private onCloseArray(end: number) {
         // closed an array.
         this.active.end = end;
         this.popActive();
+        if ( this.active instanceof JsonKeyNode ) {
+            this.popActive();
+        }
         if (this.eventCallback) {
-            this.eventCallback.onCloseObject(end);
-        }             
+            this.eventCallback.onCloseArray(end);
+        }
     }
 
 

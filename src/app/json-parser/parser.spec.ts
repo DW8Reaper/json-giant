@@ -12,14 +12,16 @@ describe('Parser', () => {
     });
 
     it('should parse an object', () => {
-        const rootNode = parser.parse(`{"key1": "b", "key2":"c", "key3":null,"key4":true,"key5":false,"key6":-100.58,"key7":{"key8": null}}`);
-        
+        // const rootNode = parser.parse(`{"key1": "b", "key2": [-9982.8,null,true, false], "key3":"za"}`);
+        // const rootNode = parser.parse(`{"key1": "b", "key2": [-9982.8], "spoed": null, "poef": nuLL}`);
+        const rootNode = parser.parse(`{"key1": "b", "key2":"c", "key3":null,"key4":true,"key5":false,"key6":-100.58,"key7":{"key8": null}, "key9":[1], "key10":{}}`);
+        // if (rootNode)return;
         const nodeList = parser.allNodes;
 
         expect(nodeList[0]).toBe(rootNode);
         expect(rootNode.type).toBe(JsonNodeType.Object);
         expect(rootNode.start).toBe(0);
-        expect(rootNode.end).toBe(99);
+        expect(rootNode.end).toBe(123);
         expect(rootNode.previousNode).toBeNull();
         expect(rootNode.data).toBeDefined();
         expect(has(rootNode.data, 'key1')).toBeTruthy();
@@ -57,12 +59,20 @@ describe('Parser', () => {
         expectNode(nodeList[13], JsonNodeType.Key, rootNode, `"key7"`, nodeList[14]);
         expectNode(nodeList[14], JsonNodeType.Object, nodeList[13], `{"key8": null}`);
 
+        expectNode(nodeList[17], JsonNodeType.Key, rootNode, `"key9"`, nodeList[18]);
+        expectNode(nodeList[18], JsonNodeType.Array, nodeList[17], `[1]`);
+        expectNode(nodeList[19], JsonNodeType.Value, nodeList[18], `1`);
+
+        expectNode(nodeList[20], JsonNodeType.Key, rootNode, `"key10"`, nodeList[21]);
+        expectNode(nodeList[21], JsonNodeType.Object, nodeList[20], `{}`);
+
         // expectNode(nodeList[13], JsonNodeType.Key, rootNode, `"key7"`, nodeList[14]);
         // expectNode(nodeList[14], JsonNodeType.Object, nodeList[13], `{"key8", null}`);
     });
 
     it('Should parse and array with values', () => {
         const rootNode = parser.parse(`["a" ,null, true,false,-100.58,{"key1" :true}, [], [1], 1]`);
+// ["a" ,null, true,false,-100.58,{"key1" :true}, [], [1], 1]
         const nodeList = parser.allNodes;
 
         expect(nodeList[0]).toBe(rootNode);
@@ -146,8 +156,6 @@ describe('Parser', () => {
     });
 
     it('Should parse a number with decimals', () => {
-        expect(parser.findNumberEnd(makeJson(`  12.3g`), 2)).toBe(-1);  // invalid char after number causes a mismatch
-
         expect(parser.findNumberEnd(makeJson(`  12.3`), 2)).toBe(5);    // match at the end of a string
         expect(parser.findNumberEnd(makeJson(`  12.3]`), 2)).toBe(5);   // match in object
         expect(parser.findNumberEnd(makeJson(`  12.3}`), 2)).toBe(5);   // match in array
@@ -209,7 +217,7 @@ describe('Parser', () => {
      * 
      * @param text json string with / that must be replaced with \
      */
-    function makeJson(text: string): string {
-        return text.replace(/\//g, '\\');
+    function makeJson(text: string): Buffer {
+        return Buffer.from(text.replace(/\//g, '\\'));
     }
 })
