@@ -22,6 +22,6 @@ done
 sleep .5s
 echo "\n'${base_dir}/dist' found, starting electron app...\n"
 
-electron . debug-mode
+electron -i . debug-mode
 
 ctrl_c

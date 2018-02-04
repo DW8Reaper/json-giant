@@ -57,8 +57,17 @@
 
 <div class="container-fluid w-100 h-100 view row" >
   <div class="col-12 pl-2 pt-1 pb-1 pr-0 m-0">
-    <app-json-tree class="w-100 h-100 view-content" [json]="state.jsonRoot" (activeNode)='state.setActiveNode($event)'></app-json-tree> 
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="nav-item">
+        <a class="nav-link" [class.active]="isTreeTabActive()" href="javascript: void(0);" (click)="setTreeTabActive()">Tree View</a>
+      </li>
+      <li role="presentation" class="nav-item">
+        <a class="nav-link" [class.active]="isRadialTabActive()" href="javascript: void(0);" (click)="setRadialTabActive()">Radial View</a>
+      </li>
+    </ul>
   </div>
+  <app-json-tree *ngIf="isTreeTabActive()" class="w-100 h-100 view-content" [json]="state.jsonRoot" (activeNode)='state.setActiveNode($event)'></app-json-tree>
+  <app-radial-view *ngIf="isRadialTabActive()" class="w-100 h-100 view-content" [json]="state.jsonRoot"></app-radial-view>
 </div>
 
 <div class="container-flud">

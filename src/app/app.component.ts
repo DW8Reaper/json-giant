@@ -11,6 +11,7 @@ import { CommandCopy } from './command/command-copy';
 import { CommandPaste } from './command/command-paste';
 import { CommandCopyPath } from './command/command-copy-path';
 import { CommandType } from './command/command-type.enum';
+import { JsonTab } from './json-tab.enum';
 
 class CommandRef {
   constructor(public commandType: CommandType, public command: CommandBase) {}
@@ -27,6 +28,7 @@ export class AppComponent {
   public title = 'app';
   public state: AppState;
   public commands: Array<CommandRef>;
+  private activeTab: string = JsonTab.TREE;
 
   constructor(private changeDetector: ChangeDetectorRef, requireService: RequireService, application: ApplicationRef) {
     this.application = application;
@@ -67,6 +69,26 @@ export class AppComponent {
       this.state.requireService.electron.remote.dialog.showErrorBox("Unknown command", 
             `Command "${type}" is unknown. Unable to execute command`);
     }
+  }
+
+  public setTreeTabActive() {
+    this.setActiveTab(JsonTab.TREE);
+  }
+
+  public setRadialTabActive() {
+    this.setActiveTab(JsonTab.RADIAL);
+  }
+
+  public isTreeTabActive(): boolean {
+    return this.activeTab === JsonTab.TREE;
+  }
+
+  public isRadialTabActive(): boolean {
+    return this.activeTab === JsonTab.RADIAL;
+  }
+
+  public setActiveTab(activeTab: string) {
+    this.activeTab = activeTab;
   }
 
 
