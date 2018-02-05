@@ -11,7 +11,7 @@ base_dir=`pwd`
 
 # remove dist and start the build in parallel
 rm -Rf "${base_dir}/dist"
-ng build --base-href "${base_dir}/dist/"  --sourcemaps -w &
+ng build --sm=true --base-href "${base_dir}/dist/" -w &
 pid=$!
 trap "ctrl_c" INT
 
