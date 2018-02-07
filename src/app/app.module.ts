@@ -8,6 +8,7 @@ import { JsonTreeComponent } from './json-tree/json-tree.component';
 
 import { TreeModule } from 'angular-tree-component';
 import { RequireService } from './services/require.service';
+import { JsonService } from './services/json.service';
 import { RadialViewComponent } from './radial-view/radial-view.component';
 
 @NgModule({
@@ -21,7 +22,7 @@ import { RadialViewComponent } from './radial-view/radial-view.component';
     FormsModule,
     TreeModule
   ],
-  providers: [RequireService],
+  providers: [RequireService, JsonService],
   bootstrap: [AppComponent],
 })
 export class AppModule { }
