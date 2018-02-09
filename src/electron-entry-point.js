@@ -84,10 +84,6 @@ function appLoaded() {
                 },
                 {
                     role: 'forcereload'
-                },
-                {
-                    label: "Show Dev Tools",
-                    role: 'toggledevtools'
                 }
             ]
         },
@@ -105,8 +101,13 @@ function appLoaded() {
                 {
                     label: 'Learn More',
                     click() { require('electron').shell.openExternal('http://electron.atom.io') }
+                },
+                {
+                    label: "Show Dev Tools",
+                    role: 'toggledevtools'
                 }
             ]
+
         }
     ];
 
