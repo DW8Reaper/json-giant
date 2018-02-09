@@ -1,3 +1,4 @@
+import { TreeNode } from 'angular-tree-component';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 
@@ -22,12 +23,13 @@ export class RadialViewComponent implements OnInit {
       return;
     }
 
-    this.jsonService.flattenJson(this.json.root.toJs()).subscribe(jsonTree => {
+    const radialBoundingBox = this.radialViewElement.nativeElement.getBoundingClientRect();
 
-      const svg = d3.select('svg'),
-      width = +svg.attr('width'),
-      height = +svg.attr('height'),
-      g = svg.append('g').attr('transform', 'translate(' + (width / 2 + 40) + ',' + (height / 2 + 90) + ')');
+    this.jsonService.flattenJson(this.json.root.toJs()).subscribe(jsonTree => {
+      const svg = d3.select(this.radialViewElement.nativeElement),
+      width = radialBoundingBox.width,
+      height = radialBoundingBox.height - 100,
+      g = svg.append('g').attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')');
 
       const stratify = d3.stratify()
           .parentId(function(d) {

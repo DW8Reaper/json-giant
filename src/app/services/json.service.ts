@@ -8,25 +8,32 @@ export class JsonService {
 
   public flattenJson(json: Object): Observable<any> {
     return Observable.create(obsv => {
-      obsv.next([this._flattenJson(json)]);
+      obsv.next(this._flattenJson({'root': json}));
       obsv.complete();
     });
   }
 
   private _flattenJson(json: Object): Object {
-    const flatJson = {};
+    let flatJson = [];
 
     for (const key in json) {
       if (json.hasOwnProperty(key)) {
+
         if (typeof json[key] === 'object') {
-          const flatChild = this.flattenJson(json[key]);
+          flatJson.push({id: key, value: 0});
+
           for (const childKey in json[key]) {
-            if (json[key][childKey].hasOwnProperty(childKey)) {
-              flatJson[key + '.' + childKey] = flatChild[childKey];
+            if (json[key].hasOwnProperty(childKey)) {
+              const flatKey = key + '.' + childKey,
+                    flatChild = {};
+
+              // flatJson.push({id: flatKey, value: 1});
+              flatChild[flatKey] = json[key][childKey];
+              flatJson = flatJson.concat(this._flattenJson(flatChild));
             }
           }
         } else {
-          flatJson[key] = json[key];
+          flatJson.push({id: key, value: json[key]});
         }
       }
     }
