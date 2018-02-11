@@ -4,9 +4,13 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class JsonService {
 
-  // private flatJson: Object;
+  private depth: number;
 
-  public flattenJson(json: Object): Observable<any> {
+  public flattenJson(json: Object, depth?: number): Observable<any> {
+    if (!!depth && depth > 0) {
+      this.depth = depth;
+    }
+
     return Observable.create(obsv => {
       obsv.next(this._flattenJson({'root': json}));
       obsv.complete();
@@ -26,6 +30,10 @@ export class JsonService {
             if (json[key].hasOwnProperty(childKey)) {
               const flatKey = key + '.' + childKey,
                     flatChild = {};
+
+              if (!!this.depth && flatKey.split('.').length > this.depth) {
+                return;
+              }
 
               // flatJson.push({id: flatKey, value: 1});
               flatChild[flatKey] = json[key][childKey];

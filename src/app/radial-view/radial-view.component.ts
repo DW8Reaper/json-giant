@@ -13,6 +13,9 @@ import { JsonService } from '../services/json.service';
 export class RadialViewComponent implements OnInit {
 
   @Input() json: JsonTreeData = null;
+  @Input() height = 2000;
+  @Input() width = 1000;
+
   @ViewChild('radialViewElement') radialViewElement: ElementRef;
 
   constructor(private jsonService: JsonService) {}
@@ -27,8 +30,8 @@ export class RadialViewComponent implements OnInit {
 
     this.jsonService.flattenJson(this.json.root.toJs()).subscribe(jsonTree => {
       const svg = d3.select(this.radialViewElement.nativeElement),
-      width = radialBoundingBox.width,
-      height = radialBoundingBox.height - 100,
+      width = this.width,
+      height = this.height,
       g = svg.append('g').attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')');
 
       const stratify = d3.stratify()
