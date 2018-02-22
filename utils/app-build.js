@@ -11,21 +11,21 @@ build();
 
 async function build() {
   const platforms = [
-    PLAT_OSX//,
-    // PLAT_WINDOWS
+    // PLAT_OSX//,
+    PLAT_WINDOWS
   ]
 
-  // build app  
-  const buildProcess = spawn('ng', ['build', '--base-href', '', '--aot','--sourcemaps', '--prod'], {});
+  // build app
+  const buildProcess = spawn('ng', ['build', '--base-href', '', '--aot','--sourcemaps', '--prod'], {shell: true});
 
   buildProcess.stdout.on('data', (data) => {
     console.log(data.toString());
   });
-  
+
   buildProcess.stderr.on('data', (data) => {
     console.log(data.toString());
   });
-  
+
   buildProcess.on('close', async function (code) {
     if (code === 0) {
       // package for all platforms
@@ -59,7 +59,7 @@ function skipFile(filename) {
     '/start-build',
     '/start-debug',
     '/tslint.json',
-    '/tsconfig.json'  
+    '/tsconfig.json'
   ]
 
   const excludedFolder = [
@@ -84,11 +84,12 @@ function getBuildOptions(platform) {
     overwrite: true,
     ignore: skipFile,
     arch: 'all',
+    osxSign: false,
     prune: true//,
     // asar: true,
     // derefSymlinks: true
   }
-  
+
   switch (platform){
     case PLAT_OSX:
       options.icon = 'AppIcon.icns';
@@ -98,6 +99,7 @@ function getBuildOptions(platform) {
       break;
     case PLAT_WINDOWS:
       options.icon = 'AppIcon.ico';
+      options.
       break;
   }
 
@@ -114,7 +116,7 @@ function makeDMG(path) {
         '-fs',
         'HFS+',
         '-ov',       // overwrite
-        '-format',  
+        '-format',
         'UDZO',      // zlib compress
         '-srcfolder',
         path,
@@ -134,12 +136,12 @@ function makeDMG(path) {
 async function buildPlatform(selectedPlatform) {
   const buildOptions = getBuildOptions(selectedPlatform);
   let prom = new Promise(function(resolve, reject){
-    packager(buildOptions, function done_callback (err, appPaths) { 
+    packager(buildOptions, function done_callback (err, appPaths) {
       if (err) {
         reject(err);
       } else {
         resolve(appPaths);
-      }  
+      }
     })
   });
   return prom;

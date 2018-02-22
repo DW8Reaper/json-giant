@@ -6,8 +6,8 @@
   "main": "dist/electron-entry-point.js",
   "scripts": {
     "ng": "ng",
-    "start": "sh start-debug",
-    "build": "node utils/build-app.js",
+    "start": "node utils/app-debug.js",
+    "build": "node utils/app-build.js",
     "test": "ng test --browsers ChromeHeadless --single-run",
     "lint": "ng lint",
     "e2e": "ng e2e"
