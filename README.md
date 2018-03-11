@@ -14,6 +14,13 @@ mode. This currently will not work on windows.
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
+## Building an Application Package
+
+To build a Json Giant application package for all platforms run `npm run build`, this will build the packages for windows, osx and linux and place them in the ```output``` directory. To build only one platform you can use:
+* `npm run build -- windows`
+* `npm run build -- linux`
+* `npm run build -- osx`
+
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).

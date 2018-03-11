@@ -1,30 +1,54 @@
 const packager = require('electron-packager')
 const process = require('process');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const packageInfo = require('../package.json');
 
 const PLAT_OSX = 'darwin';
 const PLAT_WINDOWS = 'win32';
+const PLAT_LINUX = 'linux';
 
 build();
 
+function platformEnabled(name) {
+  if (process.argv.find((arg) => arg === name)) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 async function build() {
-  const platforms = [
-    // PLAT_OSX//,
-    PLAT_WINDOWS
-  ]
+  let platforms = [];
+  if (platformEnabled('windows')) {
+    platforms.push(PLAT_WINDOWS);
+  }
+
+  if (platformEnabled('osx')) {
+    platforms.push(PLAT_OSX);
+  }
+
+  if (platformEnabled('linux')) {
+    platforms.push(PLAT_LINUX);
+  }
+
+  if (!platforms.length) {
+    platforms.push(PLAT_WINDOWS);
+    platforms.push(PLAT_OSX);
+    platforms.push(PLAT_LINUX);
+  }
 
   // build app
   const buildProcess = spawn('ng', ['build', '--base-href', '', '--aot','--sourcemaps', '--prod'], {shell: true});
 
-  buildProcess.stdout.on('data', (data) => {
-    console.log(data.toString());
-  });
+  buildProcess.stdout.pipe(process.stdout);
+  buildProcess.stderr.pipe(process.stderr);
+  // buildProcess.stdout.on('data', (data) => {
+  //   console.log(data.toString());
+  // });
 
-  buildProcess.stderr.on('data', (data) => {
-    console.log(data.toString());
-  });
+  // buildProcess.stderr.on('data', (data) => {
+  //   console.log(data.toString());
+  // });
 
   buildProcess.on('close', async function (code) {
     if (code === 0) {
@@ -99,7 +123,7 @@ function getBuildOptions(platform) {
       break;
     case PLAT_WINDOWS:
       options.icon = 'AppIcon.ico';
-      options.
+      options.arch = 'x64';
       break;
   }
 
