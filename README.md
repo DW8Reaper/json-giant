@@ -7,19 +7,19 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Start Json Giant for debugging
 
-To start Json Giant for debugging run `npm run start`. This will build (and watch for changes) Json Giant and launch electron in debug
+To start Json Giant for debugging run `yarn start`. This will build (and watch for changes) Json Giant and launch electron in debug
 mode. This currently will not work on windows.
 
 ## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `yarn test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
 ## Building an Application Package
 
-To build a Json Giant application package for all platforms run `npm run build`, this will build the packages for windows, osx and linux and place them in the ```output``` directory. To build only one platform you can use:
-* `npm run build -- windows`
-* `npm run build -- linux`
-* `npm run build -- osx`
+To build a Json Giant application package for all platforms run `yarn build`, this will build the packages for windows, osx and linux and place them in the ```output``` directory. To build only one platform you can use:
+* `yarn build windows`
+* `yarn build linux`
+* `yarn build osx`
 
 ## Further help
 

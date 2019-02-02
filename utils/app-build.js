@@ -38,7 +38,7 @@ async function build() {
   }
 
   // build app
-  const buildProcess = spawn('ng', ['build', '--base-href', '', '--aot','--sourcemaps', '--prod'], {shell: true});
+  const buildProcess = spawn('ng', ['build', '--base-href', '', '--aot', '--prod'], {shell: true});
 
   buildProcess.stdout.pipe(process.stdout);
   buildProcess.stderr.pipe(process.stderr);

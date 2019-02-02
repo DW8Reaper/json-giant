@@ -1,11 +1,12 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "importHelpers": true,
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "inlineSourceMap": false,
     "declaration": false,
-    "module": "commonjs",   
+    "module": "commonjs",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -14,11 +15,13 @@
       "node_modules/@types"
     ],
     "lib": [
-      "es2017", "dom"
+      "es2017",
+      "dom"
     ],
     "types": [
       "node",
       "core-js"
-    ]
+    ],
+    "baseUrl": "./"
   }
 }

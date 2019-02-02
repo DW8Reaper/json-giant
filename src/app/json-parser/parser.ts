@@ -1,7 +1,7 @@
 import { isString, isNumber, isUndefined, forOwn } from 'lodash';
 import { Buffer } from 'buffer';
 import { forEach } from 'lodash';
-import { transition } from '@angular/core';
+import { transition } from '@angular/animations';
 
 const ENCODING = 'utf-8';
 
