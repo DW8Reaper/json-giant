@@ -2,18 +2,33 @@
   <div class="form-inline w-100 col-12">
     <div class="btn-group btn-group-sm ">
 
-    <button type="button" class="btn btn-secondary btn-sm fa fa-folder-o" (click)="sendCommand(CommandType.Open)" data-toggle="tooltip" title="Open file">
-    </button>
-    <button type="button" class="btn btn-secondary btn-sm fa fa-floppy-o" (click)="sendCommand(CommandType.Save)" data-toggle="tooltip" title="Save to file">
-    </button>
-  </div>
+      <button type="button"
+              class="btn btn-secondary btn-sm fa fa-folder-o"
+              (click)="sendCommand(CommandType.Open)"
+              data-toggle="tooltip"
+              title="Open file">
+      </button>
+      <button type="button"
+              class="btn btn-secondary btn-sm fa fa-floppy-o"
+              (click)="sendCommand(CommandType.Save)"
+              data-toggle="tooltip"
+              title="Save to file">
+      </button>
+    </div>
 
     <div class="ml-1 btn-group btn-group-sm ">
 
-      <button type="button" class="btn btn-secondary btn-sm fa fa-files-o" (click)="sendCommand(CommandType.Copy)" data-toggle="tooltip" title="Copy to clipboard">
+      <button type="button"
+              class="btn btn-secondary btn-sm fa fa-files-o"
+              (click)="sendCommand(CommandType.Copy)"
+              data-toggle="tooltip"
+              title="Copy to clipboard">
       </button>
-      <button type="button" class="btn btn-secondary btn-sm fa fa-paste" (click)="sendCommand(CommandType.Paste)" data-toggle="tooltip"
-        title="Load from clipboard">
+      <button type="button"
+              class="btn btn-secondary btn-sm fa fa-paste"
+              (click)="sendCommand(CommandType.Paste)"
+              data-toggle="tooltip"
+              title="Load from clipboard">
       </button>
     </div>
 
@@ -33,20 +48,31 @@
     </div> -->
   </div>
 
-  <div class="row" class="" *ngIf="false">
-    <div class="input-group input-group-sm col-12 pt-1 w-100" >
+  <div class="row"
+       class=""
+       *ngIf="false">
+    <div class="input-group input-group-sm col-12 pt-1 w-100">
 
 
       <div class="input-group-btn">
-        <button class="btn btn-sm" [class]="{'btn-secondary' : !search.isRegex, 'btn-primary': search.isRegex}" type="button" ng-click="toggleSearchRegex()"
-          data-toggle="tooltip" title="Search string is a regular expression">.*</button>
+        <button class="btn btn-sm"
+                [class]="{'btn-secondary' : !search.isRegex, 'btn-primary': search.isRegex}"
+                type="button"
+                ng-click="toggleSearchRegex()"
+                data-toggle="tooltip"
+                title="Search string is a regular expression">.*</button>
       </div>
 
-      <input id="search-string-entry" type="text" class="form-control form-control-sm" ng-model="search.pattern" ng-keyup="onSearchKeyUp($event)"
-      />
+      <input id="search-string-entry"
+             type="text"
+             class="form-control form-control-sm"
+             ng-model="search.pattern"
+             ng-keyup="onSearchKeyUp($event)" />
 
       <div class="input-group-btn">
-        <button class="btn btn-secondary btn-sm fa fa-search" type="button" ng-click="onSearch()">
+        <button class="btn btn-secondary btn-sm fa fa-search"
+                type="button"
+                ng-click="onSearch()">
         </button>
       </div>
     </div>
@@ -55,9 +81,11 @@
 
 
 
-<div class="container-fluid w-100 h-100 view row" >
+<div class="container-fluid w-100 h-100 view row">
   <div class="col-12 pl-2 pt-1 pb-1 pr-0 m-0">
-    <app-json-tree class="w-100 h-100 view-content" [json]="state.jsonRoot" (activeNode)='state.setActiveNode($event)'></app-json-tree> 
+    <app-json-tree class="w-100 h-100 view-content"
+                   [json]="state.jsonRoot"
+                   (activeNode)='state.setActiveNode($event)'></app-json-tree>
   </div>
 </div>
 
@@ -65,20 +93,31 @@
   <nav class="navbar navbar-dark bg-dark fixed-bottom">
     <div class="form-inline col-12">
       <div class="input-group input-group-sm w-100">
-        <span class="input-group-addon input-group-sm">Selected Node</span>
-        <input type="text search-box" class="form-control" [ngModel]="state.getActiveNodePath()" readonly/>
-        <!-- <div class="input-group-btn">
-          <button class="btn btn-secondary btn-sm fa fa-copy" type="button" [class.active]="this.activeNode" (click)="copySelectedNode()"
-            title="Copy selected node"></button>
-        </div> -->
-        <div class="input-group-btn">
-          <button class="btn btn-secondary btn-sm fa fa-map-pin" type="button" [class.active]="this.state.activeNode" (click)="sendCommand(CommandType.CopyActivePath)"
-            title="Copy selected path"></button>
+        <div class="input-group-prepend">
+          <span class="input-group-text"
+                id="inputGroup-sizing-sm">Selected Node</span>
+          <input type="text search-box"
+                 id="inputGroup-sizing-sm"
+                 class="form-control"
+                 [ngModel]="state.getActiveNodePath()"
+                 readonly />
+          <!-- <div class="input-group-btn">
+            <button class="btn btn-secondary btn-sm fa fa-copy" type="button" [class.active]="this.activeNode" (click)="copySelectedNode()"
+              title="Copy selected node"></button>
+          </div> -->
+          <div class="input-group-btn">
+            <button class="search-button btn btn-outline-secondary btn-light fa fa-map-pin"
+                    id="inputGroup-sizing-md"
+                    type="button"
+                    [class.active]="this.state.activeNode"
+                    (click)="sendCommand(CommandType.CopyActivePath)"
+                    title="Copy selected path"></button>
+          </div>
+          <!-- <div class="input-group-btn">
+            <button class="btn btn-secondary btn-sm fa fa-trash-o" type="button" ng-class="{active : !selectedNode}" ng-click="deleteSelectedNode()"
+              title="Delete selected node"></button>
+          </div> -->
         </div>
-        <!-- <div class="input-group-btn">
-          <button class="btn btn-secondary btn-sm fa fa-trash-o" type="button" ng-class="{active : !selectedNode}" ng-click="deleteSelectedNode()"
-            title="Delete selected node"></button>
-        </div> -->
       </div>
     </div>
   </nav>

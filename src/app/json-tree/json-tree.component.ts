@@ -1,6 +1,5 @@
 import { map } from 'lodash';
 import { Component, OnInit, ViewChild, Input, Output, OnChanges, EventEmitter } from '@angular/core';
-import { Observable } from 'rxjs';
 import { TreeNode, TreeComponent } from 'angular-tree-component';
 import { Parser, JsonNode, JsonNodeType, JsonKeyNode, JsonArrayNode } from '../json-parser/parser';
 import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
@@ -21,7 +20,7 @@ export class JsonTreeComponent implements OnInit, OnChanges {
   @Output()
   activeNode = new EventEmitter;
 
-  @Input() 
+  @Input()
   json: JsonTreeData = null;
 
   @ViewChild(TreeComponent)
@@ -29,25 +28,6 @@ export class JsonTreeComponent implements OnInit, OnChanges {
 
   public nodes: Array<JsonNode>;
 
-  constructor() {
-    this.nodes = new Array<JsonNode>();
-
-    const parser = new Parser(null, false, false);
-    // const fs = require('fs');
-    // let root = parser.parse(fs.readFileSync('/Users/dewildt/Insync/Desktop/test.json').toString('UTF-8'));
-
-
-    
-    }
-  public ngOnChanges(changes: SimpleChanges){
-    if (has(changes, 'json')) {
-      this.nodes = new Array<JsonNode>();
-      if (this.json && this.json.root) {
-        this.nodes.push(this.json.root);
-      }
-      this.tree.treeModel.update();
-    }
-  }
   public options = {
     hasChildrenField: 'hasChildren',
     // isExpandedField: 'expanded',
@@ -60,7 +40,6 @@ export class JsonTreeComponent implements OnInit, OnChanges {
           return map(jsonNode.data, function (keyObject) {
             return keyObject.data;
           });
-        //return node.data.values();
         case JsonNodeType.Array:
           return jsonNode.data;
         default:
@@ -68,6 +47,23 @@ export class JsonTreeComponent implements OnInit, OnChanges {
       }
     }
   };
+
+  constructor() {
+    this.nodes = new Array<JsonNode>();
+
+    const parser = new Parser(null, false, false);
+    // const fs = require('fs');
+    // let root = parser.parse(fs.readFileSync('/Users/dewildt/Insync/Desktop/test.json').toString('UTF-8'));
+    }
+  public ngOnChanges(changes: SimpleChanges){
+    if (has(changes, 'json')) {
+      this.nodes = new Array<JsonNode>();
+      if (this.json && this.json.root) {
+        this.nodes.push(this.json.root);
+      }
+      this.tree.treeModel.update();
+    }
+  }
 
   public isContainerNode(node: JsonNode) {
     return node.type === JsonNodeType.Object || node.type === JsonNodeType.Array;
@@ -112,7 +108,7 @@ export class JsonTreeComponent implements OnInit, OnChanges {
 
   onNodeActive($event) {
     this.activeNode.emit($event.node.data);
-  } 
+  }
   onNodeDeactive($event) {
     this.activeNode.emit(null);
   }

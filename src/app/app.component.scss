@@ -1,16 +1,26 @@
 
-div.view-content {
-  margin: 0;
-  padding: 0;
-  overflow: auto;
+div {
+  .view-content {
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+  }
+
+  .view {
+    overflow: auto;
+    padding: 0;
+    margin: 0;
+  }
+
+  .form-control {
+    margin: 0 10px;
+  }
+
 }
 
-div.view {
-  overflow: auto;
-  padding: 0;
-  margin: 0;
+.search-button {
+  margin-top: 2.5pt;
 }
-
 
 .search-box {
   min-width: 100pt;

@@ -28,7 +28,7 @@ async function run() {
 
   rmDir(distPath);
 
-  const ngProcess = child_process.spawn(`ng`, [`build`, `--base-href`, `"${distPath}"`, `-w`], { shell: true });
+  const ngProcess = child_process.spawn(`ng`, [`build`, `json-giant`], { shell: true });
   ngProcess.stderr.on('data',
     data => {
       console.log(data.toString());

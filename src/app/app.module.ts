@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { JsonTreeComponent } from './json-tree/json-tree.component';
 
-import { TreeModule } from 'angular-tree-component';
+import { TreeModule, TreeDraggedElement } from 'angular-tree-component';
 import { RequireService } from './services/require.service';
 
 @NgModule({
@@ -19,7 +19,7 @@ import { RequireService } from './services/require.service';
     FormsModule,
     TreeModule
   ],
-  providers: [RequireService],
+  providers: [RequireService, TreeDraggedElement],
   bootstrap: [AppComponent],
 })
 export class AppModule { }
