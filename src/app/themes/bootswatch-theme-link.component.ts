@@ -5,7 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   selector: 'app-theme-link',
   template: `<link rel="stylesheet" type="text/css" [href]="getSafeThemeUrl()">`
 })
-export class ThemeLinkComponent {
+export class BootsWatchThemeLinkComponent {
   @Input() theme = '';
 
   constructor(private sanitizer: DomSanitizer) {}
