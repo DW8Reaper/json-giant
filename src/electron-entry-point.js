@@ -7,6 +7,7 @@ const _ = require('lodash');
 const { app, BrowserWindow, Menu, globalShortcut } = require('electron');
 const path = require('path');
 const url = require('url');
+// const themes = require('./bootswatch-themes');
 
 let jsonWindows = [];
 
@@ -82,7 +83,7 @@ function appLoaded() {
                     label: "Toggle Dark Theme",
                     accelerator: "CmdOrCtrl+D",
                     click: createCommandHandler('theme'),
-                    type: "checkbox"
+                    type: "radio"
                 },
                 {
                     role: 'forcereload'

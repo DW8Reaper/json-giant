@@ -20,6 +20,7 @@
               "src/assets",
               "src/favicon.ico",
               "src/electron-entry-point.js",
+              "src/bootswatch-themes.js",
               {
                 "glob": "*.css",
                 "input": "src/app/themes",
@@ -123,6 +124,7 @@
               "src/assets",
               "src/favicon.ico",
               "src/electron-entry-point.js",
+              "src/bootswatch-themes.js",
               {
                 "glob": "**/*",
                 "input": "node_modules/bootstrap/dist/css",
