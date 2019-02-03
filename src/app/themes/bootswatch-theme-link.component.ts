@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, ViewEncapsulation } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
+// Get theme names from https://bootswatch.com
 @Component({
   selector: 'app-theme-link',
   template: `<link rel="stylesheet" type="text/css" [href]="getSafeThemeUrl()">`
