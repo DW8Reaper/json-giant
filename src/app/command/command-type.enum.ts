@@ -4,5 +4,5 @@ export enum CommandType {
   Copy = 'copy',
   Paste = 'paste',
   CopyActivePath = 'copyPath',
-  DarkTheme = 'darkTheme'
+  Theme = 'theme'
 }

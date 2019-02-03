@@ -1,5 +1,5 @@
 import { map } from 'lodash';
-import { Component, OnInit, ViewChild, Input, Output, OnChanges, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, OnChanges, EventEmitter, ViewEncapsulation } from '@angular/core';
 import { TreeNode, TreeComponent } from 'angular-tree-component';
 import { Parser, JsonNode, JsonNodeType, JsonKeyNode, JsonArrayNode } from '../json-parser/parser';
 import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
@@ -14,7 +14,8 @@ export class JsonTreeData {
 @Component({
   selector: 'app-json-tree',
   templateUrl: './json-tree.component.html',
-  styleUrls: ['./json-tree.component.scss']
+  styleUrls: ['./json-tree.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class JsonTreeComponent implements OnInit, OnChanges {
   @Output()

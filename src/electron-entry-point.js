@@ -81,7 +81,7 @@ function appLoaded() {
                 {
                     label: "Toggle Dark Theme",
                     accelerator: "CmdOrCtrl+D",
-                    click: createCommandHandler('darkTheme'),
+                    click: createCommandHandler('theme'),
                     type: "checkbox"
                 },
                 {
@@ -167,7 +167,7 @@ function appLoaded() {
             {
                 label: "Toggle Dark Theme",
                 accelerator: "CmdOrCtrl+D",
-                click: createCommandHandler('darkTheme'),
+                click: createCommandHandler('theme'),
                 type: "checkbox"
             },
             {

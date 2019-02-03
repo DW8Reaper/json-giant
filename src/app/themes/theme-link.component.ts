@@ -6,11 +6,15 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   template: `<link rel="stylesheet" type="text/css" [href]="getSafeThemeUrl()">`
 })
 export class ThemeLinkComponent {
-  @Input() theme = 'default';
+  @Input() theme = '';
 
   constructor(private sanitizer: DomSanitizer) {}
 
   public getSafeThemeUrl(): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(`node_assets/${this.theme}.theme.bootstrap.min.css`);
+    if (this.theme === '') {
+      return '';
+    } else {
+      return this.sanitizer.bypassSecurityTrustResourceUrl(`https://bootswatch.com/4/${this.theme}/bootstrap.min.css`);
+    }
   }
 }

@@ -8,7 +8,7 @@ import { CommandCopy } from './command/command-copy';
 import { CommandPaste } from './command/command-paste';
 import { CommandCopyPath } from './command/command-copy-path';
 import { CommandType } from './command/command-type.enum';
-import { CommandDarkTheme } from './command/command-dark-theme';
+import { CommandTheme } from './command/command-theme';
 
 class CommandRef {
   constructor(public commandType: CommandType, public command: CommandBase) {}
@@ -26,7 +26,7 @@ export class AppComponent {
   public state: AppState;
   public commands: Array<CommandRef>;
 
-  public theme;
+  public theme = '';
 
   constructor(private changeDetector: ChangeDetectorRef, requireService: RequireService, application: ApplicationRef) {
     this.application = application;
@@ -50,7 +50,7 @@ export class AppComponent {
     this.registerCommand(CommandType.Copy, new CommandCopy());
     this.registerCommand(CommandType.Paste, new CommandPaste());
     this.registerCommand(CommandType.CopyActivePath, new CommandCopyPath());
-    this.registerCommand(CommandType.DarkTheme, new CommandDarkTheme());
+    this.registerCommand(CommandType.Theme, new CommandTheme());
   }
   private registerCommand(type: CommandType, command: CommandBase) {
     // listen for this command on the main process
