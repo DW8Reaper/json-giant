@@ -79,6 +79,12 @@ function appLoaded() {
                     role: 'reload'
                 },
                 {
+                    label: "Toggle Dark Theme",
+                    accelerator: "CmdOrCtrl+D",
+                    click: createCommandHandler('darkTheme'),
+                    type: "checkbox"
+                },
+                {
                     role: 'forcereload'
                 }
             ]
@@ -157,6 +163,12 @@ function appLoaded() {
             {
                 label: 'Zoom',
                 role: 'zoom'
+            },
+            {
+                label: "Toggle Dark Theme",
+                accelerator: "CmdOrCtrl+D",
+                click: createCommandHandler('darkTheme'),
+                type: "checkbox"
             },
             {
                 type: 'separator'

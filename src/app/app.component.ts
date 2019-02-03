@@ -1,16 +1,14 @@
-import { Component, ApplicationRef, ChangeDetectorRef } from '@angular/core';
-//  import { remote } from 'electron';
-import { Parser, JsonNode } from './json-parser/parser';
-import { RendererInterface } from 'electron';
+import { Component, ApplicationRef, ChangeDetectorRef, Injector, ComponentFactoryResolver } from '@angular/core';
 import { RequireService } from './services/require.service';
-import { AppState } from './app-state';
-import { CommandBase } from './command/command-base';
+import { AppState, StateChange } from './app-state';
+import { CommandBase  } from './command/command-base';
 import { CommandOpen } from './command/command-open';
 import { CommandSave } from './command/command-save';
 import { CommandCopy } from './command/command-copy';
 import { CommandPaste } from './command/command-paste';
 import { CommandCopyPath } from './command/command-copy-path';
 import { CommandType } from './command/command-type.enum';
+import { CommandDarkTheme } from './command/command-dark-theme';
 
 class CommandRef {
   constructor(public commandType: CommandType, public command: CommandBase) {}
@@ -28,6 +26,8 @@ export class AppComponent {
   public state: AppState;
   public commands: Array<CommandRef>;
 
+  public theme;
+
   constructor(private changeDetector: ChangeDetectorRef, requireService: RequireService, application: ApplicationRef) {
     this.application = application;
 
@@ -35,8 +35,11 @@ export class AppComponent {
     this.state.setJsonData(
       `{"a": 100, "b": {"c":100, "d":{"c":[1,2,3], "e":"ddddd"}}, "m&m<m>m}": {"iggy": "some string value\\""}}`, 'Sample Data');
 
-    this.state.stateChange.subscribe(() => {
+    this.state.stateChange.subscribe((change: StateChange) => {
       changeDetector.markForCheck();
+      if (change === StateChange.CurrentTheme) {
+        this.theme = this.state.getTheme();
+      }
       application.tick();
     });
 
@@ -46,8 +49,8 @@ export class AppComponent {
     this.registerCommand(CommandType.Save, new CommandSave());
     this.registerCommand(CommandType.Copy, new CommandCopy());
     this.registerCommand(CommandType.Paste, new CommandPaste());
-    this.registerCommand(CommandType.CopyActivePath, new CommandCopyPath());      
-
+    this.registerCommand(CommandType.CopyActivePath, new CommandCopyPath());
+    this.registerCommand(CommandType.DarkTheme, new CommandDarkTheme());
   }
   private registerCommand(type: CommandType, command: CommandBase) {
     // listen for this command on the main process

@@ -21,6 +21,11 @@
               "src/favicon.ico",
               "src/electron-entry-point.js",
               {
+                "glob": "*.css",
+                "input": "src/app/themes",
+                "output": "/node_assets"
+              },
+              {
                 "glob": "**/*",
                 "input": "node_modules/bootstrap/dist/css",
                 "output": "/node_assets"

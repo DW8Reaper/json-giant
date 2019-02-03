@@ -1,6 +1,8 @@
+@import '../../../node_modules/bootstrap/scss/bootstrap.scss';
+@import '../../../node_modules/bootstrap/scss/variables';
+
 :host {
   font-family: Arial, Helvetica, sans-serif;
-  
 }
 
 $box-radius :6px;
@@ -24,7 +26,7 @@ $box-radius :6px;
 }
 
 .zip-zop {
-  color: red;
+  color: $danger;
 }
 
 .no-shadow{
@@ -47,7 +49,7 @@ $box-radius :6px;
 // }
 
 .container-node-border {
-  border-left: dashed 0.5px lightseagreen;
+  border-left: dashed 0.5px $info;
   border-radius: $box-radius;
  }
 
@@ -59,7 +61,8 @@ $box-radius :6px;
 // }
 
 .ping-pong {
-  border: dashed 1px grey;
-  background-color: #beebff; 
+  border: dashed 1px $dark;
   border-radius: $box-radius; 
+  background-color: $light;
+  color: $dark;
 }

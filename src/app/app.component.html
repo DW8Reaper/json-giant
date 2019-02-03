@@ -1,3 +1,4 @@
+<app-theme-link *ngIf="theme && theme.length > 0" [theme]="theme"></app-theme-link>
 <nav class="navbar navbar-dark fixed-top bg-dark">
   <div class="form-inline w-100 col-12">
     <div class="btn-group btn-group-sm ">
@@ -89,7 +90,7 @@
   </div>
 </div>
 
-<div class="container-flud">
+<div class="container-flud btn-light">
   <nav class="navbar navbar-dark bg-dark fixed-bottom">
     <div class="form-inline col-12">
       <div class="input-group input-group-sm w-100">

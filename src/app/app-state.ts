@@ -1,4 +1,4 @@
-import { ApplicationRef, EventEmitter } from '@angular/core';
+import { EventEmitter } from '@angular/core';
 
 import { RequireService } from './services/require.service';
 import { Parser, JsonNode } from './json-parser/parser';
@@ -6,13 +6,15 @@ import { JsonTreeData } from './json-tree/json-tree.component';
 
 export enum StateChange {
   ActiveNode = 'active',
-  JsonData = 'json-data'
+  JsonData = 'json-data',
+  CurrentTheme = 'theme'
 }
 
 export class AppState {
 
   public activeNode: JsonNode = null;
   public jsonRoot: JsonTreeData = null;
+  public theme = 'default';
   public stateChange: EventEmitter<StateChange> = new EventEmitter();
 
   constructor(public readonly requireService: RequireService) {
@@ -43,5 +45,14 @@ export class AppState {
     // notify state changed
     this.activeNode = null;
     this.stateChange.emit(StateChange.JsonData);
+  }
+
+  public getTheme(): string {
+    return this.theme;
+  }
+
+  public setTheme(themeUrl: string) {
+    this.theme = themeUrl;
+    this.stateChange.emit(StateChange.CurrentTheme);
   }
 }

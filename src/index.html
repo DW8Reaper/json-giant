@@ -1,62 +1,67 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>JsonGiant</title>
   <base href="">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <link rel="icon"
+        type="image/x-icon"
+        href="favicon.ico">
 
-      <link href="node_assets/bootstrap.min.css" rel="stylesheet"/>
-      <link href="node_assets/font-awesome.min.css" rel="stylesheet"/>
-      <script src="node_assets/jquery.min.js"></script>
-      <script src="node_assets/jquery.slim.min.js"></script>
-      <script src="node_assets/tether.min.js"></script>
-      <script src="node_assets/popper.min.js"></script>
-      <script src="node_assets/bootstrap.min.js"></script>
+  <link href="node_assets/bootstrap.min.css"
+        rel="stylesheet" />
+  <link href="node_assets/font-awesome.min.css"
+        rel="stylesheet" />
+  <script src="node_assets/jquery.min.js"></script>
+  <script src="node_assets/jquery.slim.min.js"></script>
+  <script src="node_assets/tether.min.js"></script>
+  <script src="node_assets/popper.min.js"></script>
+  <script src="node_assets/bootstrap.min.js"></script>
+
+  <style>
+    body {
+      padding-top: 48px;
+      padding-bottom: 48px;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    body.large-header {
+      padding-top: calc(2*48px);
+    }
+
+    div.page-content {
+      height: 100%;
+      width: 100%;
+    }
+
+    div.view {
+      overflow: scroll;
+      height: 100%;
+    }
+
+    div.pane-right {
+      width: 300px;
+      min-width: 300px;
+    }
+
+    .page-content {
+      height: 100%;
+      width: 100%;
+    }
 
 
-      <style>
-          body {
-              padding-top: 48px;
-              padding-bottom: 48px;
-              height: 100vh;
-              width: 100vw;
-              overflow: hidden;
-          }
-          body.large-header {
-              padding-top: calc(2*48px);
-          }
-          div.page-content {
-              height: 100%;
-              width: 100%;
-          }
+    /* ensure body is not behind the navbar*/
+  </style>
+</head>
 
-          div.view {
-              overflow: scroll;
-              height: 100%;
-          }
-
-          div.pane-right {
-              width: 300px;
-              min-width: 300px;
-          }
-
-          .page-content {
-              height: 100%;
-              width: 100%;
-          }
-
-
-          /* ensure body is not behind the navbar*/
-            </style>
-    </head>
-
-    <body ng-class="{'large-header': showLargeHeader()}">
-
-
+<body ng-class="{'large-header': showLargeHeader()}">
   <app-root></app-root>
-
 </body>
+
 </html>
