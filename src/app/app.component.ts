@@ -1,4 +1,4 @@
-import { Component, ApplicationRef, ChangeDetectorRef, Injector, ComponentFactoryResolver } from '@angular/core';
+import { Component, ApplicationRef, ChangeDetectorRef } from '@angular/core';
 import { RequireService } from './services/require.service';
 import { AppState, StateChange } from './app-state';
 import { CommandBase  } from './command/command-base';

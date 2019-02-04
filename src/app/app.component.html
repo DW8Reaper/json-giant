@@ -98,8 +98,7 @@
           <span class="input-group-text"
                 id="inputGroup-sizing-sm">Selected Node</span>
           <input type="text search-box"
-                 id="inputGroup-sizing-sm"
-                 class="form-control"
+                 class="form-control search-box"
                  [ngModel]="state.getActiveNodePath()"
                  readonly />
           <!-- <div class="input-group-btn">
@@ -108,7 +107,7 @@
           </div> -->
           <div class="input-group-btn">
             <button class="search-button btn btn-outline-secondary btn-light fa fa-map-pin"
-                    id="inputGroup-sizing-md"
+                    id="inputGroup-sizing-sm"
                     type="button"
                     [class.active]="this.state.activeNode"
                     (click)="sendCommand(CommandType.CopyActivePath)"
